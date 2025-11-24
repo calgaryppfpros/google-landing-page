@@ -132,17 +132,17 @@ const PPF_PACKAGE_DESCRIPTIONS: Record<string, string> = {
 };
 
 const PPF_PACKAGE_PRICES: Record<PPFPackage, string> = {
-    [PPFPackage.BRONZE]: "$1,200 - $1,600",
-    [PPFPackage.SILVER]: "$1,800 - $2,200",
-    [PPFPackage.GOLD]: "$2,400 - $3,000",
-    [PPFPackage.TRACK]: "$3,200 - $4,000",
-    [PPFPackage.DIAMOND]: "$6,000 - $9,000"
+    [PPFPackage.BRONZE]: "$399 - $499",
+    [PPFPackage.SILVER]: "$699 - $999",
+    [PPFPackage.GOLD]: "$1,399 - $1,999",
+    [PPFPackage.TRACK]: "$1,899 - $2,499",
+    [PPFPackage.DIAMOND]: "$3,999 - $9,999"
 };
 
 const CERAMIC_PACKAGE_PRICES: Record<CeramicPackage, string> = {
-    [CeramicPackage.PLUS]: "$800 - $1,200",
-    [CeramicPackage.PREMIUM]: "$1,400 - $1,800",
-    [CeramicPackage.SUPREME]: "$2,000 - $2,600"
+    [CeramicPackage.PLUS]: "$899 - $1,349",
+    [CeramicPackage.PREMIUM]: "$1,199 - $1,499",
+    [CeramicPackage.SUPREME]: "$1,499 - $2,199"
 };
 
 // --- Enhanced Tooltip Component with Portal ---
