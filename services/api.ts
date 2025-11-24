@@ -19,7 +19,7 @@ export const submitLead = async (payload: QuoteState): Promise<boolean> => {
   console.log('🚀 Submitting Lead Payload to Webhook:', enrichedPayload);
   
   try {
-    const response = await fetch('https://n8n.srv1046173.hstgr.cloud/webhook/ppfprosformai', {
+    const response = await fetch('https://n8n.srv1046173.hstgr.cloud/webhook-test/ppfprosformai', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
