@@ -117,8 +117,8 @@ export default function App() {
                                         </span>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-bold text-xs leading-tight">Curious what it costs for YOUR vehicle?</span>
-                                        <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium">Smart form adapts to your vehicle • Instant pricing ⚡</span>
+                                        <span className="font-bold text-xs leading-tight">Protect YOUR vehicle with premium PPF</span>
+                                        <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium">Smart form finds the perfect protection package ⚡</span>
                                     </div>
 
                                     {/* Arrow Pointing Down - Aligned to center of FAB (approx 30px from right) */}

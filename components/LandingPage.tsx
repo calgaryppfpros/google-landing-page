@@ -488,7 +488,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
               }}
               className="perspective-1000"
             >
-              <h1 className="text-5xl md:text-8xl font-black text-slate-900 dark:text-white tracking-tighter leading-[1.05] mb-8 drop-shadow-2xl">
+              <h1 className="text-5xl md:text-8xl font-black text-slate-900 dark:text-white tracking-tight md:tracking-tighter leading-[1.1] md:leading-[1.05] mb-8 drop-shadow-2xl">
                 <span className="block">Don't Let Calgary's Roads</span>
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-600">
                   Destroy Your Paint.
@@ -514,7 +514,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                 className="flex flex-col sm:flex-row gap-4"
             >
               <button onClick={onOpenQuote} className="inline-flex justify-center items-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-brand-400 to-brand-600 rounded-full hover:shadow-xl hover:shadow-brand-400/30 transition-all transform hover:-translate-y-1 hover:scale-105 active:scale-95 ring-4 ring-brand-400/20">
-                See What It Costs
+                Get Your Quote
               </button>
             </motion.div>
 
@@ -924,7 +924,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                         </div>
 
                         <button onClick={onOpenQuote} className="bg-white text-slate-900 px-8 py-3 rounded-full font-bold hover:bg-slate-200 transition hover:scale-105 active:scale-95">
-                            Check Stealth Pricing
+                            Get Stealth Quote
                         </button>
                      </div>
 
@@ -1080,18 +1080,18 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                         </p>
 
                         {/* Stats Timeline */}
-                        <div className="mt-10 grid grid-cols-3 gap-6 border-t border-slate-200 dark:border-slate-800 pt-8">
-                             <div>
-                                 <div className="text-3xl font-black text-slate-900 dark:text-white">25+ Years</div>
-                                 <div className="text-xs text-slate-500 uppercase font-bold tracking-wide mt-1">Combined Experience</div>
+                        <div className="mt-10 grid grid-cols-3 gap-4 sm:gap-6 border-t border-slate-200 dark:border-slate-800 pt-8">
+                             <div className="text-center sm:text-left">
+                                 <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap">25+</div>
+                                 <div className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-tight sm:tracking-wide mt-1 leading-tight">Years Experience</div>
                              </div>
-                             <div>
-                                 <div className="text-3xl font-black text-slate-900 dark:text-white">3 Brothers</div>
-                                 <div className="text-xs text-slate-500 uppercase font-bold tracking-wide mt-1">Family Owned</div>
+                             <div className="text-center sm:text-left">
+                                 <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap">3 Bros</div>
+                                 <div className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-tight sm:tracking-wide mt-1 leading-tight">Family Owned</div>
                              </div>
-                             <div>
-                                 <div className="text-3xl font-black text-slate-900 dark:text-white">1,000+</div>
-                                 <div className="text-xs text-slate-500 uppercase font-bold tracking-wide mt-1">Cars Protected</div>
+                             <div className="text-center sm:text-left">
+                                 <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap">1,000+</div>
+                                 <div className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-tight sm:tracking-wide mt-1 leading-tight">Cars Protected</div>
                              </div>
                         </div>
                   </motion.div>
@@ -1210,15 +1210,15 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                 {[
                     {
                         q: "How much does PPF cost?",
-                        a: "Pricing varies by vehicle size and coverage. Typical Calgary pricing:\n\n• Bronze (Partial Front): $399-$599\n• Silver (Front + Bumper): $699-$999\n• Gold (Full Front): $1,399-$1,999\n• Track Pack: $1,899-$2,499\n• Diamond (Full Wrap): $3,999-$9,999\n\nUse our Smart Quote tool for exact pricing on your specific vehicle. All packages include professional installation, warranty registration, and 2-week follow-up inspection."
+                        a: "PPF pricing varies by vehicle size and coverage level. We offer packages ranging from partial front coverage to full vehicle wraps. Contact us for a personalized quote based on your specific vehicle and protection needs. All packages include professional installation, warranty registration, and 2-week follow-up inspection."
                     },
                     {
-                        q: "Why is PPF Pros more expensive than other shops?",
-                        a: "We're not the cheapest—and we're proud of that. We use industry-leading DAP precision-cut templates with wrapped edges (or custom hand-cut for complex work), climate-controlled clean rooms, and limit to 2-3 cars per day. Cheaper shops rush installations and compromise quality. We cost more upfront but outlast budget installations by years. Plus, poor installation voids your film warranty."
+                        q: "What makes PPF Pros different from other shops?",
+                        a: "We focus on quality over quantity. We use industry-leading DAP precision-cut templates with wrapped edges (or custom hand-cut for complex work), climate-controlled clean rooms, and limit to 2-3 cars per day. Many shops rush installations to maximize volume. We take our time to ensure perfection. Plus, poor installation voids your film warranty—we do it right the first time."
                     },
                     {
                         q: "Is PPF worth it in Calgary?",
-                        a: "Absolutely. Calgary roads are uniquely destructive: gravel from Deerfoot trucks, 6 months of salt, chinook wind storms, and intense UV. A single rock chip repair costs $500. Hood repaint? $1,500+. PPF pays for itself the first time it saves your paint. Plus, protected cars sell for $2,000-$5,000 more than damaged ones."
+                        a: "Absolutely. Calgary roads are uniquely destructive: gravel from Deerfoot trucks, 6 months of salt, chinook wind storms, and intense UV. Rock chips, paint damage, and windshield cracks are common. PPF pays for itself by preventing paint damage that would otherwise require expensive repairs. Plus, protected vehicles maintain significantly higher resale value."
                     },
                     {
                         q: "How long does installation take?",
@@ -1242,19 +1242,19 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                     },
                     {
                         q: "How much does Ceramic Coating cost?",
-                        a: "Our ceramic coating packages protect your paint from UV damage, water spots, and make maintenance easier:\n\n• Plus: $899-$1,349\n• Premium: $1,199-$1,649\n• Supreme: $1,499-$2,499\n\nPricing varies by vehicle size. All packages include full decontamination, paint prep, and multi-year warranties."
+                        a: "Our ceramic coating packages protect your paint from UV damage, water spots, and make maintenance easier. We offer three tiers:\n\n• Plus: Entry-level protection\n• Premium: Enhanced durability\n• Supreme: Maximum protection and longevity\n\nPricing varies by vehicle size. All packages include full decontamination, paint prep, and multi-year warranties. Contact us for a personalized quote."
                     },
                     {
                         q: "What are your Window Tint prices?",
-                        a: "We offer two premium tint lines:\n\nCeramic Series (CS):\n• 2 Windows: $249\n• 3 Windows: $399\n• 5 Windows: $449\n• 7 Windows: $549\n\nXR Series (Premium):\n• 2 Windows: $299\n• 3 Windows: $539\n• 5 Windows: $649\n• 7 Windows: $749\n\nAll tints include lifetime warranty and professional installation."
+                        a: "We offer two premium tint lines:\n\n• Ceramic Series (CS): Advanced heat rejection and clarity\n• XR Series (Premium): Maximum performance and IR blocking\n\nPricing varies based on the number of windows and vehicle type. All tints include lifetime warranty and professional installation. Contact us for a quote."
                     },
                     {
                         q: "Do you offer Detailing and Paint Correction?",
-                        a: "Yes! We offer comprehensive detailing and paint correction services:\n\n• Detailing: Starting at $399\n• Paint Correction (Single Stage): Starting at $399\n• Paint Correction (2-Stage): Starting at $699\n• Paint Correction (Multi-Stage): Starting at $999\n\nPaint correction removes swirl marks, scratches, and oxidation for a showroom finish before PPF or ceramic coating."
+                        a: "Yes! We offer comprehensive detailing and paint correction services:\n\n• Professional Detailing\n• Paint Correction (Single Stage): Light imperfections\n• Paint Correction (2-Stage): Moderate swirls and scratches\n• Paint Correction (Multi-Stage): Heavy correction for show-quality finish\n\nPaint correction removes swirl marks, scratches, and oxidation for a showroom finish before PPF or ceramic coating. Contact us for pricing."
                     },
                     {
                         q: "What other protection services do you offer?",
-                        a: "We're a complete vehicle protection shop:\n\n• Undercoating: Starting at $599\n• Rustproofing: Starting at $499\n• Undercoating + Rustproofing Combo: Starting at $999\n• Windshield Protection Film: Starting at $499\n• Interior Protection: Starting at $499\n\nAll services use premium products and include professional installation. Contact us for exact pricing on your vehicle."
+                        a: "We're a complete vehicle protection shop offering:\n\n• Undercoating: Rust prevention for Calgary winters\n• Rustproofing: Long-term corrosion protection\n• Undercoating + Rustproofing Combo: Complete undercarriage protection\n• Windshield Protection Film: Prevent chips and cracks\n• Interior Protection: Fabric and leather protection\n\nAll services use premium products and include professional installation. Contact us for pricing on your specific vehicle."
                     }
                 ].map((faq, i) => (
                     <details key={i} className="group bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm cursor-pointer border border-transparent hover:border-brand-200 dark:hover:border-slate-700 transition">
