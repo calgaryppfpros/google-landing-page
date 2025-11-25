@@ -108,7 +108,7 @@ export default function App() {
                                     initial={{ opacity: 0, y: 10, scale: 0.8, x: 0 }}
                                     animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
                                     exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
-                                    className="absolute bottom-[calc(100%+20px)] right-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 flex items-center gap-4 z-40 max-w-[calc(100vw-8rem)] sm:max-w-[350px] origin-bottom-right"
+                                    className="absolute bottom-[calc(100%+20px)] right-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 flex items-center gap-4 z-40 w-max origin-bottom-right"
                                 >
                                     <div className="relative flex-shrink-0">
                                         <span className="relative flex h-3 w-3">
@@ -116,9 +116,9 @@ export default function App() {
                                             <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-500"></span>
                                         </span>
                                     </div>
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="font-bold text-sm leading-tight break-words">Curious what it costs for YOUR vehicle?</span>
-                                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium break-words">Smart form adapts to your vehicle • Instant pricing ⚡</span>
+                                    <div className="flex flex-col">
+                                        <span className="font-bold text-sm leading-tight">Curious what it costs for YOUR vehicle?</span>
+                                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Smart form adapts to your vehicle • Instant pricing ⚡</span>
                                     </div>
                                     
                                     {/* Arrow Pointing Down - Aligned to center of FAB (approx 30px from right) */}
