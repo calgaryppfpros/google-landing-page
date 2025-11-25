@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Star, Shield, Sun, Moon, Droplets, Eye, Wrench, Play, CheckCircle, ChevronDown, Mail, Menu, Sparkles, Phone, Tag, Award, Timer, Check, Layers, ShieldCheck, Ghost, Palette, MousePointerClick, RefreshCcw, X, ArrowRight, Loader2, Maximize2, Armchair, History, Trophy, Globe, Car, HeartHandshake, MapPin, Users, AlertTriangle, Hammer, Snowflake, Calculator } from 'lucide-react';
+import { Star, Shield, Sun, Moon, Droplets, Eye, Wrench, Play, CheckCircle, ChevronDown, Mail, Menu, Sparkles, Phone, Tag, Award, Timer, Check, Layers, ShieldCheck, Ghost, Palette, MousePointerClick, RefreshCcw, X, ArrowRight, Loader2, Maximize2, Armchair, History, Trophy, Globe, Car, HeartHandshake, MapPin, Users } from 'lucide-react';
 import { PROMOS, CAR_COLORS, CarColor } from '../types';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent, useMotionValue, useSpring } from 'framer-motion';
 
@@ -8,8 +8,7 @@ interface Props {
   onOpenQuote: () => void;
 }
 
-// --- Antigravity Physics Engine ---
-const PARTICLE_COUNT = 140;
+// --- Antigravity Physics Engine (Mobile Optimized & High DPI) ---
 const MOUSE_INFLUENCE_RADIUS = 350;
 const MOUSE_REPULSION_STRENGTH = 3;
 const FRICTION = 0.95;
@@ -25,8 +24,8 @@ class DebrisParticle {
     rotSpeed: number;
     depth: number; // 0.1 (far) to 1.0 (near)
     color: string;
-    shape: 'rect'; // Force capsules
-    aspectRatio: number; // for rects (capsules)
+    shape: 'rect';
+    aspectRatio: number;
 
     constructor(width: number, height: number, theme: 'light' | 'dark') {
         this.x = Math.random() * width;
@@ -43,7 +42,7 @@ class DebrisParticle {
         
         this.rotation = Math.random() * Math.PI * 2;
         this.rotSpeed = (Math.random() - 0.5) * 0.04;
-        this.aspectRatio = Math.random() * 3 + 1.5; // Length vs width for dashes
+        this.aspectRatio = Math.random() * 3 + 1.5;
 
         // Antigravity Google Colors (Vibrant Blues + Brand)
         const colorsLight = ['#0ea5e9', '#0284c7', '#38bdf8', '#0369a1', '#7dd3fc'];
@@ -51,23 +50,19 @@ class DebrisParticle {
         const palette = theme === 'dark' ? colorsDark : colorsLight;
         this.color = palette[Math.floor(Math.random() * palette.length)];
 
-        // Restoring Capsules: 100% capsules
         this.shape = 'rect';
     }
 
-    update(width: number, height: number, mouseX: number, mouseY: number) {
-        // 1. Mouse Interaction (Magnetic Repulsion)
-        const dx = this.x - mouseX;
-        const dy = this.y - mouseY;
+    update(width: number, height: number, inputX: number, inputY: number) {
+        // 1. Interaction (Magnetic Repulsion)
+        const dx = this.x - inputX;
+        const dy = this.y - inputY;
         const dist = Math.sqrt(dx*dx + dy*dy);
         
         if (dist < MOUSE_INFLUENCE_RADIUS) {
             const force = (MOUSE_INFLUENCE_RADIUS - dist) / MOUSE_INFLUENCE_RADIUS;
-            // Smoother ease-out curve
             const ease = force * force; 
             const angle = Math.atan2(dy, dx);
-            
-            // Nearer particles move more (parallax feel)
             const push = ease * MOUSE_REPULSION_STRENGTH * this.depth;
             
             this.vx += Math.cos(angle) * push;
@@ -82,7 +77,7 @@ class DebrisParticle {
         this.vx *= FRICTION;
         this.vy *= FRICTION;
 
-        // 3. Float Keepalive (Zero-G drift)
+        // 3. Float Keepalive
         if (Math.abs(this.vx) < FLOAT_SPEED * 0.2) this.vx += (Math.random() - 0.5) * 0.05;
         if (Math.abs(this.vy) < FLOAT_SPEED * 0.2) this.vy += (Math.random() - 0.5) * 0.05;
 
@@ -99,12 +94,10 @@ class DebrisParticle {
         ctx.rotate(this.rotation);
         
         ctx.fillStyle = this.color;
-        // Fade out based on depth for atmospheric depth
         ctx.globalAlpha = 0.5 + (this.depth * 0.5); 
 
         const w = this.size * this.aspectRatio;
         const h = this.size;
-        // Draw rounded rect manually (Capsule shape)
         this.drawRoundedRect(ctx, -w/2, -h/2, w, h, h/2);
         ctx.fill();
         
@@ -126,7 +119,7 @@ class DebrisParticle {
 
 const GravityCanvas: React.FC<{ theme: 'light' | 'dark' }> = ({ theme }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const mouseRef = useRef({ x: -1000, y: -1000 });
+    const inputRef = useRef({ x: -1000, y: -1000 });
     const animationRef = useRef<number | null>(null);
     const particlesRef = useRef<DebrisParticle[]>([]);
 
@@ -136,34 +129,53 @@ const GravityCanvas: React.FC<{ theme: 'light' | 'dark' }> = ({ theme }) => {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        // Init Particles (reduced count on mobile for performance)
+        // Init Particles with Mobile Optimization
         const init = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            // High DPI Scaling
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            canvas.style.width = `${window.innerWidth}px`;
+            canvas.style.height = `${window.innerHeight}px`;
+            
+            ctx.scale(dpr, dpr);
+
+            // Determine particle count based on screen size
             const isMobile = window.innerWidth < 768;
-            const particleCount = isMobile ? 50 : PARTICLE_COUNT;
-            particlesRef.current = Array.from({ length: particleCount }, () => new DebrisParticle(canvas.width, canvas.height, theme));
+            const count = isMobile ? 60 : 140; // Reduced count for mobile performance
+            
+            particlesRef.current = Array.from({ length: count }, () => new DebrisParticle(window.innerWidth, window.innerHeight, theme));
         };
         init();
 
-        const handleMouseMove = (e: MouseEvent) => {
+        // Handle both Mouse and Touch
+        const updateInput = (x: number, y: number) => {
              const rect = canvas.getBoundingClientRect();
-             mouseRef.current = {
-                 x: e.clientX - rect.left,
-                 y: e.clientY - rect.top
+             inputRef.current = {
+                 x: x - rect.left,
+                 y: y - rect.top
              };
+        };
+
+        const handleMouseMove = (e: MouseEvent) => updateInput(e.clientX, e.clientY);
+        const handleTouchMove = (e: TouchEvent) => {
+            if(e.touches.length > 0) {
+                updateInput(e.touches[0].clientX, e.touches[0].clientY);
+            }
         };
 
         const handleResize = () => init();
 
         window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('touchmove', handleTouchMove);
         window.addEventListener('resize', handleResize);
 
         const animate = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Clear logical pixels
+            ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
             
             particlesRef.current.forEach(p => {
-                p.update(canvas.width, canvas.height, mouseRef.current.x, mouseRef.current.y);
+                p.update(window.innerWidth, window.innerHeight, inputRef.current.x, inputRef.current.y);
                 p.draw(ctx);
             });
 
@@ -173,6 +185,7 @@ const GravityCanvas: React.FC<{ theme: 'light' | 'dark' }> = ({ theme }) => {
 
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('touchmove', handleTouchMove);
             window.removeEventListener('resize', handleResize);
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
@@ -209,6 +222,9 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
   const [email, setEmail] = useState('');
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showVisualizer, setShowVisualizer] = useState(false);
+  const [activeColor, setActiveColor] = useState(CAR_COLORS[2]); // Default to a color
+  const [isSimulating, setIsSimulating] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   
   const { scrollY } = useScroll();
@@ -273,6 +289,13 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
     setMobileMenuOpen(false);
   };
 
+  const handleColorChange = (color: CarColor) => {
+      if (color.id === activeColor.id) return;
+      setIsSimulating(true);
+      setActiveColor(color);
+      // Simulate "Generation" time
+      setTimeout(() => setIsSimulating(false), 800);
+  };
 
   // Animation Variants
   const containerVariants = {
@@ -342,7 +365,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                 {['Services', 'Technology', 'Process', 'About'].map((item) => (
                     <button 
                         key={item}
-                        onClick={() => scrollToSection(item.toLowerCase() === 'services' ? 'benefits' : item.toLowerCase() === 'process' ? 'how-it-works' : item.toLowerCase())} 
+                        onClick={() => scrollToSection(item.toLowerCase())} 
                         className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-brand-400 transition-colors relative group"
                     >
                         {item}
@@ -362,8 +385,8 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                     {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
                 </button>
 
-                {/* Desktop Phone */}
-                <a href="tel:+14038303311" className="hidden lg:flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-brand-500 transition-colors">
+                {/* Phone Button - Visible on Mobile Only (md:hidden) */}
+                <a href="tel:+14038303311" className="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-brand-500 transition-colors">
                     <Phone className="w-4 h-4" />
                 </a>
 
@@ -399,7 +422,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                         {['Services', 'Technology', 'Process', 'About'].map((item) => (
                             <button 
                                 key={item}
-                                onClick={() => scrollToSection(item.toLowerCase() === 'services' ? 'benefits' : item.toLowerCase() === 'process' ? 'how-it-works' : item.toLowerCase())}
+                                onClick={() => scrollToSection(item.toLowerCase())}
                                 className="block w-full text-left font-bold text-lg text-slate-800 dark:text-slate-200 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                             >
                                 {item}
@@ -423,9 +446,9 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
       </motion.header>
 
       {/* --- ANTIGRAVITY HERO SECTION --- */}
-      <section
-        className="relative pt-32 pb-16 lg:pt-48 lg:pb-24 overflow-hidden"
-        onMouseMove={handleMouseMove}
+      <section 
+        className="relative pt-32 pb-24 lg:pt-48 lg:pb-40 overflow-hidden"
+        onMouseMove={handleMouseMove} 
         onMouseLeave={handleMouseLeave}
       >
         {/* 1. Background Gradient base */}
@@ -446,16 +469,16 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
         {/* 4. Content Container */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 perspective-1000">
           <div className="max-w-4xl">
-            <motion.div
+            <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-brand-200/50 dark:border-slate-700/50 text-brand-700 dark:text-brand-300 text-sm font-bold mb-8 shadow-sm"
             >
                 <Award className="w-4 h-4 text-brand-500" />
-                <span>Consumer Choice Award Winner 3 Years • Family Owned</span>
+                <span>Calgary's Premier Protection Studio • 25+ Years Combined Experience</span>
             </motion.div>
-
+            
             {/* 3D TILT HEADLINE */}
             <motion.div
               style={{
@@ -465,26 +488,12 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
               }}
               className="perspective-1000"
             >
-              <h1 className="text-5xl md:text-8xl font-black text-slate-900 dark:text-white tracking-tighter leading-[1.05] mb-6 drop-shadow-2xl">
-                <span className="block">Save $3,200+ on</span>
+              <h1 className="text-5xl md:text-8xl font-black text-slate-900 dark:text-white tracking-tighter leading-[1.05] mb-8 drop-shadow-2xl">
+                <span className="block">Don't Let Calgary's Roads</span>
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-600">
-                  Paint Repairs.
+                  Destroy Your Paint.
                 </span>
               </h1>
-            </motion.div>
-
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="mb-8"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-800 mb-4">
-                <ShieldCheck className="w-5 h-5 text-brand-600 dark:text-brand-400" />
-                <span className="text-sm font-bold text-brand-900 dark:text-brand-100">
-                  Museum-Quality Protection • Quality Over Volume
-                </span>
-              </div>
             </motion.div>
 
             <motion.p
@@ -493,18 +502,19 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed max-w-2xl font-medium"
             >
-              Expert Paint Protection Film (PPF), Ceramic Coatings, and XPEL Window Tint by 3 brothers who treat every vehicle like family.
-              Specialized for Calgary's gravel-covered highways, winter salt, and intense UV that destroys unprotected paint.
+              Every Calgary driver knows the anxiety of that first rock chip on Deerfoot Trail.
+              We specialize in invisible, self-healing protection that keeps your paint flawless—no matter how harsh the winter or brutal the commute.
+              Military-grade XPEL technology, installed by perfectionists who actually care.
             </motion.p>
-            
-            <motion.div 
+
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
                 className="flex flex-col sm:flex-row gap-4"
             >
               <button onClick={onOpenQuote} className="inline-flex justify-center items-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-brand-400 to-brand-600 rounded-full hover:shadow-xl hover:shadow-brand-400/30 transition-all transform hover:-translate-y-1 hover:scale-105 active:scale-95 ring-4 ring-brand-400/20">
-                Get Your Smart Quote
+                See What It Costs
               </button>
             </motion.div>
 
@@ -532,106 +542,6 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
         </div>
       </section>
 
-      {/* THE CALGARY PROBLEM SECTION */}
-      <section className="py-20 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 border-b border-slate-200 dark:border-slate-800 relative z-20">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 text-sm font-bold mb-6">
-                      <AlertTriangle className="w-4 h-4" />
-                      <span>The Reality of Calgary Driving</span>
-                  </div>
-                  <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6">
-                      Your Paint is Under <span className="text-red-600 dark:text-red-500">Constant Attack</span>
-                  </h2>
-                  <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
-                      Calgary roads destroy more paint than anywhere else in Canada. Here's what your vehicle faces every single day:
-                  </p>
-              </div>
-
-              <div className="grid md:grid-cols-3 gap-8 mb-12">
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-                      <div className="w-12 h-12 bg-red-100 dark:bg-red-950/30 rounded-xl flex items-center justify-center mb-4">
-                          <Hammer className="w-6 h-6 text-red-600 dark:text-red-500" />
-                      </div>
-                      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Gravel Season = Chip Season</h3>
-                      <p className="text-slate-600 dark:text-slate-400 mb-3">
-                          Calgary uses <strong className="text-slate-900 dark:text-white">millions of pounds of gravel</strong> every winter for traction. One Deerfoot commute = 5-10 rock impacts.
-                      </p>
-                      <p className="text-red-600 dark:text-red-500 font-bold text-sm">
-                          Result: Hood repaints cost $1,500-2,500
-                      </p>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-                      <div className="w-12 h-12 bg-orange-100 dark:bg-orange-950/30 rounded-xl flex items-center justify-center mb-4">
-                          <Snowflake className="w-6 h-6 text-orange-600 dark:text-orange-500" />
-                      </div>
-                      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Road Salt Corrosion</h3>
-                      <p className="text-slate-600 dark:text-slate-400 mb-3">
-                          Winter road salt bonds to paint and undercarriage, causing <strong className="text-slate-900 dark:text-white">permanent staining and rust</strong> within 3-5 years.
-                      </p>
-                      <p className="text-orange-600 dark:text-orange-500 font-bold text-sm">
-                          Result: 15-20% lower resale value
-                      </p>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-                      <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-950/30 rounded-xl flex items-center justify-center mb-4">
-                          <Sun className="w-6 h-6 text-yellow-600 dark:text-yellow-500" />
-                      </div>
-                      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Intense UV Damage</h3>
-                      <p className="text-slate-600 dark:text-slate-400 mb-3">
-                          Calgary gets <strong className="text-slate-900 dark:text-white">2,400+ hours of sunshine yearly</strong>. UV rays fade paint, crack dashboards, and destroy interiors.
-                      </p>
-                      <p className="text-yellow-600 dark:text-yellow-500 font-bold text-sm">
-                          Result: $2,000+ interior replacement
-                      </p>
-                  </div>
-              </div>
-
-              <div className="bg-slate-900 dark:bg-black text-white p-8 rounded-2xl border border-slate-800">
-                  <div className="flex flex-col md:flex-row items-center gap-8">
-                      <div className="flex-1">
-                          <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                              <Calculator className="w-7 h-7 text-brand-400" />
-                              The Real Cost of Doing Nothing
-                          </h3>
-                          <div className="space-y-2 text-slate-300 mb-4">
-                              <div className="flex items-center justify-between">
-                                  <span>Average paint repairs (5 years):</span>
-                                  <span className="font-bold text-white">$2,500</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                  <span>Windshield replacement:</span>
-                                  <span className="font-bold text-white">$1,000</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                  <span>Interior sun damage:</span>
-                                  <span className="font-bold text-white">$1,500</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                  <span>Lost resale value:</span>
-                                  <span className="font-bold text-white">$3,000</span>
-                              </div>
-                              <div className="border-t border-slate-700 pt-3 mt-3 flex items-center justify-between text-xl">
-                                  <span className="font-bold">Total damage over 5 years:</span>
-                                  <span className="font-black text-red-500 text-3xl">$8,000+</span>
-                              </div>
-                          </div>
-                      </div>
-                      <div className="text-center">
-                          <div className="bg-gradient-to-br from-brand-400 to-brand-600 p-6 rounded-2xl mb-4">
-                              <p className="text-sm font-bold mb-2 opacity-90">Protection investment</p>
-                              <p className="text-5xl font-black">$2,500</p>
-                              <p className="text-sm mt-2 opacity-90">One-time cost</p>
-                          </div>
-                          <p className="text-brand-400 font-bold">You save $5,500+</p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </section>
-
       {/* NEW: Trust Indicators Strip */}
       <section className="bg-slate-900 dark:bg-black py-12 border-y border-slate-800 relative z-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -641,8 +551,8 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                           <Award className="w-8 h-8 text-brand-400 group-hover:text-white" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-white text-lg">Consumer Choice</h3>
-                        <p className="text-sm text-slate-400">Award Winner (3 Years)</p>
+                        <h3 className="font-bold text-white text-lg">3× Consumer Choice Award</h3>
+                        <p className="text-sm text-slate-400">Calgary's Highest-Rated PPF Shop</p>
                       </div>
                   </div>
                    <div className="flex flex-col items-center gap-3 group cursor-pointer">
@@ -650,8 +560,8 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                           <ShieldCheck className="w-8 h-8 text-brand-400 group-hover:text-white" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-white text-lg">Authorized Dealer</h3>
-                        <p className="text-sm text-slate-400">Official XPEL Installer</p>
+                        <h3 className="font-bold text-white text-lg">Authorized XPEL Dealer</h3>
+                        <p className="text-sm text-slate-400">1 of Only 5 in Calgary</p>
                       </div>
                   </div>
                   <div className="flex flex-col items-center gap-3 group cursor-pointer">
@@ -659,8 +569,8 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                           <Globe className="w-8 h-8 text-brand-400 group-hover:text-white" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-white text-lg">Warranty</h3>
-                        <p className="text-sm text-slate-400">Valid Across North America</p>
+                        <h3 className="font-bold text-white text-lg">10-Year Warranty</h3>
+                        <p className="text-sm text-slate-400">Honored at 1,000+ Shops</p>
                       </div>
                   </div>
                   <div className="flex flex-col items-center gap-3 group cursor-pointer">
@@ -669,22 +579,186 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                       </div>
                       <div>
                         <h3 className="font-bold text-white text-lg">Uber Rides</h3>
-                        <p className="text-sm text-slate-400">Available with Packages</p>
+                        <p className="text-sm text-slate-400">On Select Services</p>
                       </div>
                   </div>
               </div>
           </div>
       </section>
 
-      {/* Benefits / Services Grid */}
-      <section id="benefits" className="py-24 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 relative z-20">
+      {/* Your Paint is Under Constant Attack Section */}
+      <section className="py-24 bg-gradient-to-br from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+              {/* Badge */}
+              <div className="flex justify-center mb-8">
+                  <div className="inline-flex items-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-full border border-red-200 dark:border-red-800">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span className="font-bold text-sm">The Reality of Calgary Driving</span>
+                  </div>
+              </div>
+
+              {/* Main Headline */}
+              <h2 className="text-4xl md:text-6xl font-black text-center mb-6">
+                  <span className="text-slate-900 dark:text-white">Your Paint is Under </span>
+                  <span className="text-red-600 dark:text-red-500">Constant Attack</span>
+              </h2>
+
+              <p className="text-center text-slate-600 dark:text-slate-400 text-xl max-w-3xl mx-auto mb-16">
+                  Calgary roads destroy more paint than anywhere else in Canada. Here's what your vehicle faces every single day:
+              </p>
+
+              {/* Threat Cards */}
+              <div className="grid md:grid-cols-3 gap-8 mb-16">
+                  {/* Gravel Season */}
+                  <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5 }}
+                      className="bg-white dark:bg-slate-800 rounded-2xl p-8 border-2 border-slate-100 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-colors"
+                  >
+                      <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center mb-6">
+                          <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                      </div>
+                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Gravel Season = Chip Season</h3>
+                      <p className="text-slate-600 dark:text-slate-400 mb-4">
+                          Calgary uses <strong>millions of pounds of gravel</strong> every winter for traction. One Deerfoot commute = 5-10 rock impacts.
+                      </p>
+                      <p className="text-red-600 dark:text-red-400 font-bold text-sm">
+                          Result: Hood repaints cost $1,500-2,500
+                      </p>
+                  </motion.div>
+
+                  {/* Road Salt */}
+                  <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.1 }}
+                      className="bg-white dark:bg-slate-800 rounded-2xl p-8 border-2 border-slate-100 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800 transition-colors"
+                  >
+                      <div className="w-14 h-14 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center mb-6">
+                          <svg className="w-7 h-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                      </div>
+                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Road Salt Corrosion</h3>
+                      <p className="text-slate-600 dark:text-slate-400 mb-4">
+                          Winter road salt bonds to paint and undercarriage, causing <strong>permanent staining and rust</strong> within 3-5 years.
+                      </p>
+                      <p className="text-orange-600 dark:text-orange-400 font-bold text-sm">
+                          Result: 15-20% lower resale value
+                      </p>
+                  </motion.div>
+
+                  {/* UV Damage */}
+                  <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      className="bg-white dark:bg-slate-800 rounded-2xl p-8 border-2 border-slate-100 dark:border-slate-700 hover:border-yellow-200 dark:hover:border-yellow-800 transition-colors"
+                  >
+                      <div className="w-14 h-14 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
+                          <Sun className="w-7 h-7 text-yellow-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Intense UV Damage</h3>
+                      <p className="text-slate-600 dark:text-slate-400 mb-4">
+                          Calgary gets <strong>2,400+ hours of sunshine yearly</strong>. UV rays fade paint, crack dashboards, and destroy interiors.
+                      </p>
+                      <p className="text-yellow-600 dark:text-yellow-400 font-bold text-sm">
+                          Result: $2,000+ interior replacement
+                      </p>
+                  </motion.div>
+              </div>
+
+              {/* Cost Calculator */}
+              <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6 }}
+                  className="bg-gradient-to-br from-slate-900 to-black dark:from-black dark:to-slate-950 rounded-3xl p-8 md:p-12 border border-slate-800 relative overflow-hidden"
+              >
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl"></div>
+
+                  <div className="relative z-10">
+                      <div className="flex items-start gap-4 mb-8">
+                          <div className="p-3 bg-white/10 rounded-xl">
+                              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                              </svg>
+                          </div>
+                          <div>
+                              <h3 className="text-3xl font-black text-white mb-2">The Real Cost of Doing Nothing</h3>
+                          </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-8">
+                          {/* Cost Breakdown */}
+                          <div className="space-y-4">
+                              <div className="flex justify-between items-center py-3 border-b border-slate-700">
+                                  <span className="text-slate-300">Average paint repairs (5 years):</span>
+                                  <span className="text-white font-bold text-xl">$2,500</span>
+                              </div>
+                              <div className="flex justify-between items-center py-3 border-b border-slate-700">
+                                  <span className="text-slate-300">Windshield replacement:</span>
+                                  <span className="text-white font-bold text-xl">$1,000</span>
+                              </div>
+                              <div className="flex justify-between items-center py-3 border-b border-slate-700">
+                                  <span className="text-slate-300">Interior sun damage:</span>
+                                  <span className="text-white font-bold text-xl">$1,500</span>
+                              </div>
+                              <div className="flex justify-between items-center py-3 border-b border-slate-700">
+                                  <span className="text-slate-300">Lost resale value:</span>
+                                  <span className="text-white font-bold text-xl">$3,000</span>
+                              </div>
+
+                              <div className="flex justify-between items-center pt-6 mt-6 border-t-2 border-red-500">
+                                  <span className="text-white font-bold text-xl">Total damage over 5 years:</span>
+                                  <span className="text-red-500 font-black text-3xl">$8,000+</span>
+                              </div>
+                          </div>
+
+                          {/* Protection Investment */}
+                          <div className="flex flex-col justify-center">
+                              <div className="bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl p-8 text-center">
+                                  <p className="text-brand-100 font-bold mb-2">Protection Investment</p>
+                                  <div className="text-6xl font-black text-white mb-4">$2,500</div>
+                                  <p className="text-brand-100 text-sm mb-6">One-time cost</p>
+
+                                  <div className="bg-white/10 backdrop-blur rounded-xl p-4 mb-6">
+                                      <p className="text-green-300 font-black text-2xl">You save $5,500+</p>
+                                      <p className="text-white/80 text-xs mt-1">Over 5 years</p>
+                                  </div>
+
+                                  <button
+                                      onClick={onOpenQuote}
+                                      className="w-full bg-white text-brand-600 font-bold py-4 px-6 rounded-xl hover:bg-brand-50 transition-all transform hover:scale-105 active:scale-95 shadow-xl"
+                                  >
+                                      Get Your Protection Quote
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </motion.div>
+          </div>
+      </section>
+
+      {/* Services Grid (Key Services) */}
+      <section id="services" className="py-24 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-20">
                 <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6">Comprehensive Protection</h2>
                 <p className="text-slate-600 dark:text-slate-400 text-xl">Battle-tested solutions for Calgary's harsh climate and gravel roads.</p>
             </div>
 
-            <motion.div 
+            <motion.div
                 className="grid md:grid-cols-3 gap-8"
                 variants={containerVariants}
                 initial="hidden"
@@ -696,43 +770,43 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                         title: 'Paint Protection Film',
                         icon: Shield,
                         desc: 'One Deerfoot commute can chip your hood 5+ times. PPF stops every rock before it reaches paint.',
-                        value: 'Save $2,000+ in future repairs',
-                        whoFor: 'New car owners, highway drivers'
+                        benefit: 'Save $2,000+ in future repairs',
+                        essential: 'New car owners, highway drivers'
                     },
                     {
                         title: 'Ceramic Coating',
                         icon: Droplets,
                         desc: 'Calgary winter salt bonds to bare paint, causing permanent staining and corrosion. Ceramic coating creates a microscopic shield.',
-                        value: 'Preserve 15-20% more resale value',
-                        whoFor: 'Daily drivers, lease returns'
+                        benefit: 'Preserve 15-20% more resale value',
+                        essential: 'Daily drivers, lease returns'
                     },
                     {
                         title: 'Window Tint (XPEL)',
                         icon: Sun,
                         desc: 'Summer dashboard temperatures hit 70°C+ (over 30°C outside) in Calgary sun. XPEL Prime XR blocks 98% of heat and UV rays.',
-                        value: 'Prevent $1,500+ interior fading',
-                        whoFor: 'Anyone with leather seats'
+                        benefit: 'Prevent $1,500+ interior fading',
+                        essential: 'Anyone with leather seats'
                     },
                     {
                         title: 'Windshield Protection',
                         icon: Eye,
                         desc: 'Windshield replacement costs $800-1,200. One rock on Deerfoot and you\'re paying. Film stops chips before they crack.',
-                        value: 'Avoid $1,000+ replacement',
-                        whoFor: 'Daily highway commuters'
+                        benefit: 'Avoid $1,000+ replacement',
+                        essential: 'Daily highway commuters'
                     },
                     {
                         title: 'Undercoating',
                         icon: Wrench,
                         desc: 'Road salt eats through undercarriage metal within 3-5 winters. Rust repair is expensive and lowers resale by thousands.',
-                        value: 'Protect $3,000+ frame value',
-                        whoFor: 'Trucks, SUVs, winter drivers'
+                        benefit: 'Protect $3,000+ frame value',
+                        essential: 'Trucks, SUVs, winter drivers'
                     },
                     {
                         title: 'Correction & Detail',
                         icon: Sparkles,
                         desc: 'Trapping swirls and scratches under PPF locks in imperfections forever. We restore paint to showroom condition first.',
-                        value: 'Remove years of damage',
-                        whoFor: 'Used vehicles, pre-protection'
+                        benefit: 'Remove years of damage',
+                        essential: 'Used vehicles, pre-protection'
                     },
                 ].map((service, idx) => (
                     <motion.div
@@ -745,12 +819,10 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                         </div>
                         <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">{service.title}</h3>
                         <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">{service.desc}</p>
-                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                            <p className="text-brand-600 dark:text-brand-400 font-bold text-sm mb-2">{service.value}</p>
-                            <p className="text-slate-500 dark:text-slate-500 text-sm">
-                                <span className="font-semibold">Essential for:</span> {service.whoFor}
-                            </p>
-                        </div>
+                        <p className="text-brand-500 dark:text-brand-400 font-bold text-sm mb-3">{service.benefit}</p>
+                        <p className="text-slate-500 dark:text-slate-500 text-xs">
+                            <span className="font-bold">Essential for:</span> {service.essential}
+                        </p>
                     </motion.div>
                 ))}
             </motion.div>
@@ -931,7 +1003,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                             onClick={onOpenQuote}
                             className="inline-flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-8 py-4 rounded-full font-bold hover:bg-slate-800 dark:hover:bg-slate-200 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 hover:scale-105 active:scale-95"
                         >
-                            Get Color Change Quote <ArrowRight className="w-5 h-5" />
+                            Get Your Quote <ArrowRight className="w-5 h-5" />
                         </button>
                      </div>
                 </div>
@@ -945,52 +1017,80 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
       <section id="about" className="py-24 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden">
           {/* Decorative background elements */}
           <div className="absolute top-20 left-0 w-64 h-64 bg-brand-100 dark:bg-brand-900/20 rounded-full blur-3xl opacity-50"></div>
-          
+
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <div className="grid md:grid-cols-2 gap-16 items-center">
-                  <motion.div 
+                  <motion.div
                     className="order-2 md:order-1"
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.7 }}
                   >
-                       <div className="inline-flex items-center gap-2 bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 px-3 py-1 rounded text-xs font-bold tracking-widest uppercase mb-4">
-                            <History className="w-4 h-4" /> Our Story
+                       <div className="inline-flex items-center gap-2 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 px-3 py-1 rounded text-xs font-bold tracking-widest uppercase mb-4">
+                            <History className="w-4 h-4" /> OUR STORY
                         </div>
-                        <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-6">Born From Frustration.</h2>
-                        <div className="space-y-6 text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
-                            <div className="bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 p-4 mb-6">
-                                <p className="text-slate-700 dark:text-slate-300 font-medium italic">
-                                    "We took our own vehicles—an $80K Audi and a new Porsche—to Calgary's 'premier' PPF shops. What we saw shocked us: razor blade marks on the paint, peeling edges after two weeks, and installers who rushed through $3,000+ jobs like they were applying screen protectors."
-                                </p>
-                            </div>
-                            <p>
-                                That's when we knew: <strong className="text-slate-900 dark:text-white">if we wanted it done right, we'd have to do it ourselves.</strong>
-                            </p>
-                            <p>
-                                In 2021, three brothers—with backgrounds in engineering, detailing, and business—opened PPF Pros. Our promise was simple: treat every vehicle like it's our own family's car. No corners cut. No volume quotas. Just meticulous, obsessive attention to detail.
-                            </p>
-                            <p>
-                                We invested in <strong className="text-slate-900 dark:text-white">hospital-grade clean rooms</strong> to eliminate dust contamination. We mastered <strong className="text-slate-900 dark:text-white">"bulk installation"</strong>—custom-cutting film and tucking edges so installations look invisible. We limit our bookings so every vehicle gets the time it deserves.
-                            </p>
-                            <p className="text-brand-600 dark:text-brand-400 font-bold text-xl">
-                                Today, 1,000+ vehicles later, we're still that same family-owned studio that refuses to compromise quality for quantity.
+                        <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-8">Born From Frustration.</h2>
+
+                        {/* Customer Story Quote */}
+                        <div className="bg-white dark:bg-slate-800 border-l-4 border-red-500 p-6 rounded-r-xl mb-8 shadow-sm">
+                            <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed mb-4">
+                                "We took our own vehicles—an $80K Audi and a new Porsche—to Calgary's 'premier' PPF shops. What we saw shocked us: razor blade marks on the paint, peeling edges after two weeks, and installers who rushed through $3,000+ jobs like they were applying screen protectors."
                             </p>
                         </div>
-                        
+
+                        <p className="text-slate-900 dark:text-white font-bold text-xl mb-8">
+                            That's when we knew: <span className="text-brand-500">if we wanted it done right, we'd have to do it ourselves.</span>
+                        </p>
+
+                        <div className="space-y-6 text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-8">
+                            <p>
+                                In 2021, three brothers—bringing 25+ years of combined experience in engineering, detailing, and business—opened PPF Pros. Our promise was simple: treat every vehicle like it's our own family's car. No corners cut. No volume quotas. Just meticulous, obsessive attention to detail.
+                            </p>
+                            <p>
+                                We maintain <strong>climate-controlled clean rooms</strong> to eliminate dust contamination. We offer both industry-leading <strong>DAP precision-cut templates with wrapped edges</strong> and <strong>custom hand-cut installation</strong> for complex curves and unique modifications—giving you the best of both worlds. We limit our bookings so every vehicle gets the time it deserves.
+                            </p>
+                        </div>
+
+                        {/* Differentiators */}
+                        <div className="bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-6 mb-8 border border-slate-200 dark:border-slate-700">
+                            <h3 className="font-bold text-slate-900 dark:text-white text-xl mb-4">What Makes Us Different:</h3>
+                            <ul className="space-y-3">
+                                <li className="flex items-start gap-3">
+                                    <CheckCircle className="w-5 h-5 text-brand-500 flex-shrink-0 mt-1" />
+                                    <span className="text-slate-700 dark:text-slate-300"><strong>Your Choice of Installation:</strong> Industry-leading DAP precision-cut templates with wrapped edges OR custom hand-cut for complex curves and unique body modifications—you choose what's best for your vehicle</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <CheckCircle className="w-5 h-5 text-brand-500 flex-shrink-0 mt-1" />
+                                    <span className="text-slate-700 dark:text-slate-300"><strong>Climate-Controlled Clean Rooms:</strong> Zero dust, perfect temperature for adhesion</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <CheckCircle className="w-5 h-5 text-brand-500 flex-shrink-0 mt-1" />
+                                    <span className="text-slate-700 dark:text-slate-300"><strong>Limited Daily Intake:</strong> Only 2-3 vehicles per day for undivided focus</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <CheckCircle className="w-5 h-5 text-brand-500 flex-shrink-0 mt-1" />
+                                    <span className="text-slate-700 dark:text-slate-300"><strong>Owner-Supervised:</strong> One of us oversees every single installation</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <p className="text-brand-500 dark:text-brand-400 font-bold text-xl italic">
+                            Today, 1,000+ vehicles later, we're still that same family-owned studio that refuses to compromise quality for quantity.
+                        </p>
+
                         {/* Stats Timeline */}
                         <div className="mt-10 grid grid-cols-3 gap-6 border-t border-slate-200 dark:border-slate-800 pt-8">
                              <div>
-                                 <div className="text-3xl font-black text-slate-900 dark:text-white">2021</div>
-                                 <div className="text-xs text-slate-500 uppercase font-bold tracking-wide mt-1">Established</div>
+                                 <div className="text-3xl font-black text-slate-900 dark:text-white">25+ Years</div>
+                                 <div className="text-xs text-slate-500 uppercase font-bold tracking-wide mt-1">Combined Experience</div>
                              </div>
                              <div>
-                                 <div className="text-3xl font-black text-slate-900 dark:text-white">Family</div>
-                                 <div className="text-xs text-slate-500 uppercase font-bold tracking-wide mt-1">Owned & Operated</div>
+                                 <div className="text-3xl font-black text-slate-900 dark:text-white">3 Brothers</div>
+                                 <div className="text-xs text-slate-500 uppercase font-bold tracking-wide mt-1">Family Owned</div>
                              </div>
                              <div>
-                                 <div className="text-3xl font-black text-slate-900 dark:text-white">1000+</div>
+                                 <div className="text-3xl font-black text-slate-900 dark:text-white">1,000+</div>
                                  <div className="text-xs text-slate-500 uppercase font-bold tracking-wide mt-1">Cars Protected</div>
                              </div>
                         </div>
@@ -1109,60 +1209,60 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
             <div className="space-y-4">
                 {[
                     {
-                        q: "Is PPF worth the investment in Calgary?",
-                        a: "Absolutely. Calgary roads use **millions of pounds of gravel** every winter for traction, which destroys paint. A single Deerfoot commute can cause **5-10 rock chips**. Repainting a hood costs **$1,500-2,500** and lowers resale value by removing original paint. PPF preserves the original finish permanently for a **one-time investment** of ~$2,000-3,000. You break even in year 2-3, then it's pure savings."
+                        q: "How much does PPF cost?",
+                        a: "Pricing varies by vehicle size and coverage. Typical Calgary pricing:\n\n• Bronze (Partial Front): $399-$599\n• Silver (Front + Bumper): $699-$999\n• Gold (Full Front): $1,399-$1,999\n• Track Pack: $1,899-$2,499\n• Diamond (Full Wrap): $3,999-$9,999\n\nUse our Smart Quote tool for exact pricing on your specific vehicle. All packages include professional installation, warranty registration, and 2-week follow-up inspection."
                     },
                     {
-                        q: "Why not just fix rock chips as they happen?",
-                        a: "Touch-up paint and chip repairs are **visible under direct light** and signal to buyers that the vehicle has damage history. Even professional repaints can't match factory paint perfectly. Once you repaint, the vehicle loses its **\"original paint\" status**, dropping resale value by **$2,000-5,000**. PPF prevents the damage entirely, preserving factory finish."
+                        q: "Why is PPF Pros more expensive than other shops?",
+                        a: "We're not the cheapest—and we're proud of that. We use industry-leading DAP precision-cut templates with wrapped edges (or custom hand-cut for complex work), climate-controlled clean rooms, and limit to 2-3 cars per day. Cheaper shops rush installations and compromise quality. We cost more upfront but outlast budget installations by years. Plus, poor installation voids your film warranty."
                     },
                     {
-                        q: "What if I lease my vehicle?",
-                        a: "PPF is **essential for leases**. Lease return inspections ding you for **every chip, scratch, and dent**. A typical Calgary lease return without protection can cost **$1,500-3,000 in damage fees**. PPF pays for itself by avoiding these penalties, plus you can **remove it before return** to restore factory condition. Many of our clients are lease drivers."
-                    },
-                    {
-                        q: "How do I know you won't damage my new car?",
-                        a: "Valid concern—we've seen competitors leave **razor marks, adhesive residue, and scratches** on brand-new paint. Here's how we're different: (1) **Hospital-grade clean rooms** eliminate dust contamination, (2) **Bulk installation technique** means we custom-cut film off the car, not on it—zero blade contact with paint, (3) We limit bookings to **2-3 vehicles per week** max, giving your car the time it deserves. You can visit our bay and inspect our work on any vehicle."
+                        q: "Is PPF worth it in Calgary?",
+                        a: "Absolutely. Calgary roads are uniquely destructive: gravel from Deerfoot trucks, 6 months of salt, chinook wind storms, and intense UV. A single rock chip repair costs $500. Hood repaint? $1,500+. PPF pays for itself the first time it saves your paint. Plus, protected cars sell for $2,000-$5,000 more than damaged ones."
                     },
                     {
                         q: "How long does installation take?",
-                        a: "A standard **front-end package takes 1-2 days**. A **full vehicle wrap takes 4-5 days** to ensure edges are wrapped, dried, and cured properly. Rush jobs lead to peeling and bubbles—we won't compromise quality for speed. We'll provide a loaner Uber credit if needed during installation."
+                        a: "Bronze/Silver: 1-2 days. Gold: 2-3 days. Full Wrap: 4-5 days. We never rush. Uber rides available on select services."
                     },
                     {
                         q: "What is the warranty?",
-                        a: "We offer a **10-year manufacturer warranty** against yellowing, cracking, peeling, and staining on all XPEL films. This warranty is **transferable** and **valid across North America**, adding to your vehicle's resale value. If you sell the car, the new owner inherits the remaining warranty—a huge selling point."
+                        a: "10-year warranty against yellowing, cracking, peeling, and staining on all XPEL Ultimate films. Warranty is valid at 1,000+ authorized XPEL shops across North America."
                     },
                     {
-                        q: "What is the difference between PPF and Ceramic Coating?",
-                        a: "**PPF** is a thick **(8-10mil) physical urethane film** that **stops rock chips and deep scratches**—it's impact protection. **Ceramic Coating** is a microscopic liquid layer that bonds to paint, providing **gloss and hydrophobic properties** (water beads off), but it **does NOT stop rock chips**. Think of PPF as a bulletproof vest, Ceramic as a raincoat. We recommend **PPF for high-impact zones** (hood, fenders, bumper) and **Ceramic for the rest** for easy cleaning."
+                        q: "What if I'm not happy with the installation?",
+                        a: "We stand behind our work 100%. If you notice any installation issues, contact us immediately and we'll make it right. In 3+ years and 1,000+ installations, our commitment to perfection means every customer leaves satisfied."
                     },
                     {
-                        q: "Can I see PPF Pros' work vs. competitors?",
-                        a: "Absolutely. Look for these telltale signs of bad PPF: **(1) Visible edges** along body lines, **(2) Razor marks** or scratches in the paint under the film, **(3) Dirt/dust trapped under film**, **(4) Peeling corners** within months. Our installations have **tucked, invisible edges**, zero blade marks, and stay pristine for **10+ years**. Visit our shop or check our Google reviews for close-up photos from real customers."
+                        q: "PPF vs. Ceramic Coating vs. Wax?",
+                        a: "PPF (8-mil thick film): Physical protection against rock chips and scratches. Ceramic Coating (microscopic liquid): Protects against UV, water spots, makes washing easier—no rock chip protection. Wax: Temporary shine only. Best combo: PPF on high-impact areas + ceramic on rest of car."
                     },
                     {
-                        q: "How long does window tint last?",
-                        a: "Our **XPEL Prime XR Nano-Ceramic tint** comes with a **lifetime transferable warranty**. It will **never bubble, peel, fade, or turn purple** for as long as you own the vehicle. Cheap tint from quick-service shops fails within **2-3 years**. XPEL tint is **nano-ceramic technology**—blocks **98% of IR heat** while maintaining clarity."
+                        q: "Can I wash my car after installation?",
+                        a: "Wait 7 days for first wash to let adhesive fully cure. After that, wash as normal. Avoid automatic car washes with brushes—touchless or hand wash only."
                     },
                     {
-                        q: "Can I wash my car right after installation?",
-                        a: "We recommend waiting **at least 7 days** before the first wash. This allows the film adhesive and any ceramic coating to **fully cure and bond** to the vehicle surface. After the cure period, you can wash normally—PPF is **pressure-washer safe** and loves soap and water."
+                        q: "How much does Ceramic Coating cost?",
+                        a: "Our ceramic coating packages protect your paint from UV damage, water spots, and make maintenance easier:\n\n• Plus: $899-$1,349\n• Premium: $1,199-$1,649\n• Supreme: $1,499-$2,499\n\nPricing varies by vehicle size. All packages include full decontamination, paint prep, and multi-year warranties."
+                    },
+                    {
+                        q: "What are your Window Tint prices?",
+                        a: "We offer two premium tint lines:\n\nCeramic Series (CS):\n• 2 Windows: $249\n• 3 Windows: $399\n• 5 Windows: $449\n• 7 Windows: $549\n\nXR Series (Premium):\n• 2 Windows: $299\n• 3 Windows: $539\n• 5 Windows: $649\n• 7 Windows: $749\n\nAll tints include lifetime warranty and professional installation."
+                    },
+                    {
+                        q: "Do you offer Detailing and Paint Correction?",
+                        a: "Yes! We offer comprehensive detailing and paint correction services:\n\n• Detailing: Starting at $399\n• Paint Correction (Single Stage): Starting at $399\n• Paint Correction (2-Stage): Starting at $699\n• Paint Correction (Multi-Stage): Starting at $999\n\nPaint correction removes swirl marks, scratches, and oxidation for a showroom finish before PPF or ceramic coating."
+                    },
+                    {
+                        q: "What other protection services do you offer?",
+                        a: "We're a complete vehicle protection shop:\n\n• Undercoating: Starting at $599\n• Rustproofing: Starting at $499\n• Undercoating + Rustproofing Combo: Starting at $999\n• Windshield Protection Film: Starting at $499\n• Interior Protection: Starting at $499\n\nAll services use premium products and include professional installation. Contact us for exact pricing on your vehicle."
                     }
                 ].map((faq, i) => (
                     <details key={i} className="group bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm cursor-pointer border border-transparent hover:border-brand-200 dark:hover:border-slate-700 transition">
                         <summary className="flex justify-between items-center font-bold text-slate-900 dark:text-white list-none text-lg">
                             {faq.q}
-                            <ChevronDown className="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform flex-shrink-0 ml-4" />
+                            <ChevronDown className="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform" />
                         </summary>
-                        <div className="mt-4 text-slate-600 dark:text-slate-400 leading-relaxed pl-4 border-l-2 border-brand-200">
-                            {faq.a.split('**').map((part, idx) =>
-                                idx % 2 === 0 ? (
-                                    <span key={idx}>{part}</span>
-                                ) : (
-                                    <strong key={idx} className="text-slate-900 dark:text-white font-bold">{part}</strong>
-                                )
-                            )}
-                        </div>
+                        <p className="mt-4 text-slate-600 dark:text-slate-400 leading-relaxed pl-4 border-l-2 border-brand-200">{faq.a}</p>
                     </details>
                 ))}
             </div>
@@ -1225,7 +1325,6 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
               </div>
           </div>
       </footer>
-
     </div>
   );
-};
+} 
