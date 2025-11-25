@@ -108,28 +108,28 @@ export default function App() {
                                     initial={{ opacity: 0, y: 10, scale: 0.8, x: 0 }}
                                     animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
                                     exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
-                                    className="absolute bottom-[calc(100%+20px)] right-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 flex items-center gap-4 z-40 w-max origin-bottom-right"
+                                    className="absolute bottom-[calc(100%+20px)] right-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 z-40 w-max origin-bottom-right"
                                 >
                                     <div className="relative flex-shrink-0">
-                                        <span className="relative flex h-3 w-3">
+                                        <span className="relative flex h-2.5 w-2.5">
                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-500"></span>
+                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500"></span>
                                         </span>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-bold text-sm leading-tight">Curious what it costs for YOUR vehicle?</span>
-                                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Smart form adapts to your vehicle • Instant pricing ⚡</span>
+                                        <span className="font-bold text-xs leading-tight">Curious what it costs for YOUR vehicle?</span>
+                                        <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium">Smart form adapts to your vehicle • Instant pricing ⚡</span>
                                     </div>
-                                    
+
                                     {/* Arrow Pointing Down - Aligned to center of FAB (approx 30px from right) */}
-                                    <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-white dark:bg-slate-800 transform rotate-45 border-b border-r border-slate-100 dark:border-slate-700"></div>
-                                    
+                                    <div className="absolute -bottom-1.5 right-6 w-2.5 h-2.5 bg-white dark:bg-slate-800 transform rotate-45 border-b border-r border-slate-100 dark:border-slate-700"></div>
+
                                     {/* Close */}
-                                    <button 
-                                        onClick={handleCloseBubble} 
-                                        className="absolute -top-2 -right-2 bg-slate-100 dark:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full p-1 hover:scale-110 transition shadow-sm border border-slate-200 dark:border-slate-600"
+                                    <button
+                                        onClick={handleCloseBubble}
+                                        className="absolute -top-1.5 -right-1.5 bg-slate-100 dark:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full p-0.5 hover:scale-110 transition shadow-sm border border-slate-200 dark:border-slate-600"
                                     >
-                                        <X className="w-3 h-3" />
+                                        <X className="w-2.5 h-2.5" />
                                     </button>
                                 </motion.div>
                             )}
