@@ -18,29 +18,12 @@ const GoogleG = () => (
 export default function App() {
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
-  const [showPhoneTooltip, setShowPhoneTooltip] = useState(false);
-  const [showQuoteTooltip, setShowQuoteTooltip] = useState(false);
-  const [showReviewTooltip, setShowReviewTooltip] = useState(false);
 
   // Close reviews if quote opens to prevent stacking
   const handleOpenQuote = () => {
     setIsReviewsOpen(false);
     setIsQuoteOpen(true);
   };
-
-  // Show tooltips after page load
-  React.useEffect(() => {
-    const timer1 = setTimeout(() => setShowQuoteTooltip(true), 2000);
-    const timer2 = setTimeout(() => setShowQuoteTooltip(false), 7000);
-    const timer3 = setTimeout(() => setShowReviewTooltip(true), 8000);
-    const timer4 = setTimeout(() => setShowReviewTooltip(false), 13000);
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
-    };
-  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 overflow-x-hidden">
@@ -68,62 +51,34 @@ export default function App() {
       {!isQuoteOpen && !isReviewsOpen && (
         <>
             {/* NEW: Bottom Left Google Reviews Badge Trigger */}
-            <motion.div
+            <motion.div 
                 className="fixed bottom-6 left-6 z-30 hidden sm:block"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 1 }}
             >
-                <div className="relative">
-                    <button
-                        onClick={() => {
-                            setIsReviewsOpen(true);
-                            setShowReviewTooltip(false);
-                        }}
-                        onMouseEnter={() => setShowReviewTooltip(true)}
-                        onMouseLeave={() => setShowReviewTooltip(false)}
-                        className="bg-white dark:bg-slate-900 rounded-full shadow-xl shadow-slate-200 dark:shadow-slate-900 border border-slate-100 dark:border-slate-800 p-1.5 pr-5 flex items-center gap-3 hover:scale-105 active:scale-95 transition-transform group"
-                    >
-                        <div className="bg-white p-2 rounded-full shadow-sm border border-slate-100">
-                             <GoogleG />
-                        </div>
-                        <div className="flex flex-col items-start">
-                            <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-slate-900 dark:text-white text-sm leading-none pt-0.5">5.0</span>
-                                <div className="flex gap-0.5">
-                                    {[1,2,3,4,5].map(i => (
-                                        <Star key={i} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">(72 Reviews)</span>
-                                <CheckCircle2 className="w-3 h-3 text-blue-500 fill-blue-500/10" />
+                <button
+                    onClick={() => setIsReviewsOpen(true)}
+                    className="bg-white dark:bg-slate-900 rounded-full shadow-xl shadow-slate-200 dark:shadow-slate-900 border border-slate-100 dark:border-slate-800 p-1.5 pr-5 flex items-center gap-3 hover:scale-105 active:scale-95 transition-transform group"
+                >
+                    <div className="bg-white p-2 rounded-full shadow-sm border border-slate-100">
+                         <GoogleG />
+                    </div>
+                    <div className="flex flex-col items-start">
+                        <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-slate-900 dark:text-white text-sm leading-none pt-0.5">5.0</span>
+                            <div className="flex gap-0.5">
+                                {[1,2,3,4,5].map(i => (
+                                    <Star key={i} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                                ))}
                             </div>
                         </div>
-                    </button>
-
-                    {/* Animated Tooltip Bubble */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -20, scale: 0.8 }}
-                        animate={{
-                            opacity: showReviewTooltip ? 1 : 0,
-                            x: showReviewTooltip ? 0 : -20,
-                            scale: showReviewTooltip ? 1 : 0.8
-                        }}
-                        className="absolute left-full ml-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                    >
-                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-xl shadow-2xl relative">
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xl">⭐</span>
-                                <div className="text-xs font-bold text-slate-900 dark:text-white whitespace-nowrap">See What Customers Say</div>
-                            </div>
-                            <div className="text-[10px] text-slate-600 dark:text-slate-400 whitespace-nowrap">72 verified reviews • 5.0 rating</div>
-                            {/* Arrow */}
-                            <div className="absolute left-[-6px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-r-[8px] border-r-white dark:border-r-slate-800"></div>
+                        <div className="flex items-center gap-1">
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">(72 Reviews)</span>
+                            <CheckCircle2 className="w-3 h-3 text-blue-500 fill-blue-500/10" />
                         </div>
-                    </motion.div>
-                </div>
+                    </div>
+                </button>
             </motion.div>
 
             {/* Mobile Only: Simple Review Button Bottom Left */}
@@ -137,88 +92,38 @@ export default function App() {
             {/* Right Side Action Group */}
             <div className="fixed bottom-6 right-6 z-30 flex flex-col gap-4 items-end">
                 {/* Floating Call Button (Small) */}
-                <motion.div className="relative">
-                    <motion.a
-                    href="tel:+14038303311"
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onMouseEnter={() => setShowPhoneTooltip(true)}
-                    onMouseLeave={() => setShowPhoneTooltip(false)}
-                    className="bg-white text-brand-600 p-3 rounded-full shadow-xl border border-brand-100 flex items-center justify-center group relative"
-                    aria-label="Call Us"
-                    >
-                    <Phone className="w-6 h-6" />
-                    </motion.a>
-
-                    {/* Animated Tooltip Bubble */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 20, scale: 0.8 }}
-                        animate={{
-                            opacity: showPhoneTooltip ? 1 : 0,
-                            x: showPhoneTooltip ? 0 : 20,
-                            scale: showPhoneTooltip ? 1 : 0.8
-                        }}
-                        className="absolute right-full mr-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                    >
-                        <div className="bg-slate-900 text-white px-4 py-2 rounded-lg shadow-xl relative">
-                            <div className="text-xs font-bold whitespace-nowrap">📞 Quick Questions?</div>
-                            <div className="text-[10px] text-slate-300 whitespace-nowrap">(403) 830-3311</div>
-                            {/* Arrow */}
-                            <div className="absolute right-[-6px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-l-[6px] border-l-slate-900"></div>
-                        </div>
-                    </motion.div>
-                </motion.div>
+                <motion.a
+                href="tel:+14038303311"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="bg-white text-brand-600 p-3 rounded-full shadow-xl border border-brand-100 flex items-center justify-center group relative"
+                aria-label="Call Us"
+                >
+                <Phone className="w-6 h-6" />
+                <span className="absolute right-full mr-4 bg-white text-slate-800 text-xs font-bold px-3 py-1.5 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                    Call Us
+                </span>
+                </motion.a>
 
                 {/* Main FAB */}
-                <motion.div className="relative">
-                    <motion.button
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => {
-                        setIsQuoteOpen(true);
-                        setShowQuoteTooltip(false);
-                    }}
-                    onMouseEnter={() => setShowQuoteTooltip(true)}
-                    onMouseLeave={() => setShowQuoteTooltip(false)}
-                    className="bg-gradient-to-br from-brand-400 to-brand-600 text-white p-4 rounded-full shadow-2xl shadow-brand-500/40 flex items-center justify-center group relative"
-                    aria-label="Get Smart Quote"
-                    >
-                    {/* Ping Effect */}
-                    <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:animate-ping pointer-events-none"></div>
-                    <MessageSquareQuote className="w-7 h-7" />
-                    </motion.button>
-
-                    {/* Animated Tooltip Bubble */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 20, scale: 0.8 }}
-                        animate={{
-                            opacity: showQuoteTooltip ? 1 : 0,
-                            x: showQuoteTooltip ? 0 : 20,
-                            scale: showQuoteTooltip ? 1 : 0.8
-                        }}
-                        className="absolute right-full mr-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                    >
-                        <div className="bg-gradient-to-br from-brand-500 to-brand-600 text-white px-4 py-3 rounded-xl shadow-2xl relative">
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xl">✨</span>
-                                <div className="text-xs font-bold whitespace-nowrap">Get Instant Pricing!</div>
-                            </div>
-                            <div className="text-[10px] text-brand-100 whitespace-nowrap">Takes 60 seconds • No commitment</div>
-                            {/* Arrow */}
-                            <div className="absolute right-[-6px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-l-[8px] border-l-brand-500"></div>
-                            {/* Pulse animation */}
-                            <motion.div
-                                animate={{ scale: [1, 1.05, 1] }}
-                                transition={{ duration: 2, repeat: Infinity }}
-                                className="absolute inset-0 rounded-xl bg-white opacity-10"
-                            />
-                        </div>
-                    </motion.div>
-                </motion.div>
+                <motion.button
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsQuoteOpen(true)}
+                className="bg-gradient-to-br from-brand-400 to-brand-600 text-white p-4 rounded-full shadow-2xl shadow-brand-500/40 flex items-center justify-center group relative"
+                aria-label="Get Smart Quote"
+                >
+                <span className="absolute right-full mr-4 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                    Get a Quote
+                </span>
+                {/* Ping Effect */}
+                <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:animate-ping pointer-events-none"></div>
+                <MessageSquareQuote className="w-7 h-7" />
+                </motion.button>
             </div>
         </>
       )}
