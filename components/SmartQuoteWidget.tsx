@@ -132,7 +132,7 @@ const PPF_PACKAGE_DESCRIPTIONS: Record<string, string> = {
 };
 
 const PPF_PACKAGE_PRICES: Record<PPFPackage, string> = {
-    [PPFPackage.BRONZE]: "$399 - $499",
+    [PPFPackage.BRONZE]: "$399 - $599",
     [PPFPackage.SILVER]: "$699 - $999",
     [PPFPackage.GOLD]: "$1,399 - $1,999",
     [PPFPackage.TRACK]: "$1,899 - $2,499",
@@ -141,8 +141,8 @@ const PPF_PACKAGE_PRICES: Record<PPFPackage, string> = {
 
 const CERAMIC_PACKAGE_PRICES: Record<CeramicPackage, string> = {
     [CeramicPackage.PLUS]: "$899 - $1,349",
-    [CeramicPackage.PREMIUM]: "$1,199 - $1,499",
-    [CeramicPackage.SUPREME]: "$1,499 - $2,199"
+    [CeramicPackage.PREMIUM]: "$1,199 - $1,649",
+    [CeramicPackage.SUPREME]: "$1,499 - $2,499"
 };
 
 // --- Enhanced Tooltip Component with Portal ---
@@ -670,8 +670,8 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
                     >
                     <div className="flex justify-between items-start gap-2">
                         <div className="flex-1">
-                            <span className="font-bold text-slate-900 dark:text-white">{label}</span>
-                            <div className="mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-950/30 border border-green-300 dark:border-green-900">
+                            <span className="font-bold text-slate-900 dark:text-white block">{label}</span>
+                            <div className="mt-2 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-950/30 border border-green-300 dark:border-green-900 w-fit">
                                 <span className="text-xs font-bold text-green-700 dark:text-green-400">Typically {PPF_PACKAGE_PRICES[pkg]}</span>
                             </div>
                         </div>
@@ -858,8 +858,8 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
                 >
                   <div className="flex justify-between items-start gap-2">
                     <div className="flex-1">
-                        <span className="font-bold text-slate-900 dark:text-white">{pkg}</span>
-                        <div className="mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-950/30 border border-green-300 dark:border-green-900">
+                        <span className="font-bold text-slate-900 dark:text-white block">{pkg}</span>
+                        <div className="mt-2 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-950/30 border border-green-300 dark:border-green-900 w-fit">
                             <span className="text-xs font-bold text-green-700 dark:text-green-400">Typically {CERAMIC_PACKAGE_PRICES[pkg]}</span>
                         </div>
                     </div>

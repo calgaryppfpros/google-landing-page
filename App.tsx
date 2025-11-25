@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LandingPage } from './components/LandingPage';
 import { SmartQuoteWidget } from './components/SmartQuoteWidget';
 import { GoogleReviewsWidget } from './components/GoogleReviewsWidget';
-import { motion } from 'framer-motion';
-import { MessageSquareQuote, Phone, Star, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquareQuote, Star, CheckCircle2, X } from 'lucide-react';
 
 // Google 'G' Logo Component
 const GoogleG = () => (
@@ -18,11 +18,26 @@ const GoogleG = () => (
 export default function App() {
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
+  const [isBubbleVisible, setIsBubbleVisible] = useState(false);
+
+  useEffect(() => {
+    // Show bubble after 15 seconds to allow user to explore first
+    const timer = setTimeout(() => {
+      setIsBubbleVisible(true);
+    }, 15000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Close reviews if quote opens to prevent stacking
   const handleOpenQuote = () => {
     setIsReviewsOpen(false);
+    setIsBubbleVisible(false); // Hide bubble when interacting
     setIsQuoteOpen(true);
+  };
+
+  const handleCloseBubble = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsBubbleVisible(false);
   };
 
   return (
@@ -50,9 +65,9 @@ export default function App() {
       {/* Floating Action Elements - Only visible when modal is closed */}
       {!isQuoteOpen && !isReviewsOpen && (
         <>
-            {/* NEW: Bottom Left Google Reviews Badge Trigger */}
+            {/* Google Reviews Badge Trigger - Unified for Mobile & Desktop */}
             <motion.div 
-                className="fixed bottom-6 left-6 z-30 hidden sm:block"
+                className="fixed bottom-6 left-4 sm:left-6 z-30"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 1 }}
@@ -81,49 +96,76 @@ export default function App() {
                 </button>
             </motion.div>
 
-            {/* Mobile Only: Simple Review Button Bottom Left */}
-            <motion.button
-                 onClick={() => setIsReviewsOpen(true)}
-                 className="fixed bottom-6 left-4 z-30 sm:hidden bg-white dark:bg-slate-900 p-3 rounded-full shadow-lg border border-slate-200 dark:border-slate-800 text-yellow-500"
-            >
-                <Star className="w-6 h-6 fill-current" />
-            </motion.button>
-
             {/* Right Side Action Group */}
-            <div className="fixed bottom-6 right-6 z-30 flex flex-col gap-4 items-end">
-                {/* Floating Call Button (Small) */}
-                <motion.a
-                href="tel:+14038303311"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="bg-white text-brand-600 p-3 rounded-full shadow-xl border border-brand-100 flex items-center justify-center group relative"
-                aria-label="Call Us"
-                >
-                <Phone className="w-6 h-6" />
-                <span className="absolute right-full mr-4 bg-white text-slate-800 text-xs font-bold px-3 py-1.5 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                    Call Us
-                </span>
-                </motion.a>
+            <div className="fixed bottom-6 right-6 z-30 flex flex-col gap-4 items-end pointer-events-none">
+                <div className="pointer-events-auto flex flex-col items-end gap-4">
+                    {/* Main FAB Container */}
+                    <div className="relative">
+                        {/* Engagement Bubble - Positioned on Top & Right Aligned */}
+                        <AnimatePresence>
+                            {isBubbleVisible && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.8, x: 0 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+                                    className="absolute bottom-[calc(100%+20px)] right-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 flex items-center gap-4 z-40 w-max origin-bottom-right"
+                                >
+                                    <div className="relative flex-shrink-0">
+                                        <span className="relative flex h-3 w-3">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-500"></span>
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="font-bold text-sm leading-tight">Curious what it costs for YOUR vehicle?</span>
+                                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Smart form adapts to your vehicle • Instant pricing ⚡</span>
+                                    </div>
+                                    
+                                    {/* Arrow Pointing Down - Aligned to center of FAB (approx 30px from right) */}
+                                    <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-white dark:bg-slate-800 transform rotate-45 border-b border-r border-slate-100 dark:border-slate-700"></div>
+                                    
+                                    {/* Close */}
+                                    <button 
+                                        onClick={handleCloseBubble} 
+                                        className="absolute -top-2 -right-2 bg-slate-100 dark:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full p-1 hover:scale-110 transition shadow-sm border border-slate-200 dark:border-slate-600"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                {/* Main FAB */}
-                <motion.button
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setIsQuoteOpen(true)}
-                className="bg-gradient-to-br from-brand-400 to-brand-600 text-white p-4 rounded-full shadow-2xl shadow-brand-500/40 flex items-center justify-center group relative"
-                aria-label="Get Smart Quote"
-                >
-                <span className="absolute right-full mr-4 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                    Get a Quote
-                </span>
-                {/* Ping Effect */}
-                <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:animate-ping pointer-events-none"></div>
-                <MessageSquareQuote className="w-7 h-7" />
-                </motion.button>
+                        {/* Main FAB */}
+                        <motion.button
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={isBubbleVisible ? { 
+                                scale: 1,
+                                rotate: [0, -10, 10, -10, 10, 0],
+                                opacity: 1
+                            } : { scale: 1, opacity: 1, rotate: 0 }}
+                            transition={{ 
+                                rotate: { 
+                                    duration: 1.5, 
+                                    repeat: Infinity, 
+                                    repeatDelay: 3.5,
+                                    ease: "easeInOut"
+                                }
+                            }}
+                            whileHover={{ scale: 1.1, rotate: 0 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => { setIsQuoteOpen(true); setIsBubbleVisible(false); }}
+                            className="bg-gradient-to-br from-brand-400 to-brand-600 text-white p-4 rounded-full shadow-2xl shadow-brand-500/40 flex items-center justify-center group relative z-50"
+                            aria-label="Get Smart Quote"
+                        >
+                            <span className="absolute right-full mr-4 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                Get a Quote
+                            </span>
+                            {/* Ping Effect */}
+                            <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:animate-ping pointer-events-none"></div>
+                            <MessageSquareQuote className="w-7 h-7" />
+                        </motion.button>
+                    </div>
+                </div>
             </div>
         </>
       )}
