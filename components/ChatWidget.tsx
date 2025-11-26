@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, ChevronRight, Zap, Shield, Sparkles, User, Phone, Car, CheckCircle2, Bot, Loader2, Minimize2, RefreshCcw, CornerDownLeft, ThumbsUp, ThumbsDown, Trash2 } from 'lucide-react';
+import { MessageSquare, X, Send, ChevronRight, Zap, Shield, Sparkles, User, Phone, Car, CheckCircle2, Bot, Loader2, Minimize2, RefreshCcw, CornerDownLeft, ThumbsUp, ThumbsDown, Trash2, Mail, Wrench } from 'lucide-react';
 import { CAR_MAKES_AND_MODELS } from '../types';
 
 // --- Types ---
@@ -21,6 +21,7 @@ interface ChatState {
   name: string;
   vehicle: string;
   phone: string;
+  email: string;
   serviceInterest: string;
 }
 
@@ -379,6 +380,7 @@ export const ChatWidget: React.FC = () => {
     name: '',
     vehicle: '',
     phone: '',
+    email: '',
     serviceInterest: ''
   });
 
@@ -435,7 +437,7 @@ export const ChatWidget: React.FC = () => {
         }
       ];
       setMessages(initialMsgs);
-      setChatState({ name: '', vehicle: '', phone: '', serviceInterest: '' });
+      setChatState({ name: '', vehicle: '', phone: '', email: '', serviceInterest: '' });
       localStorage.removeItem('ppf_chat_history');
       localStorage.setItem('ppf_chat_thread_id', newThreadId);
   };
@@ -624,24 +626,26 @@ export const ChatWidget: React.FC = () => {
     ]);
   };
 
-  const handleContactSubmit = async (name: string, phone: string) => {
-    setChatState(prev => ({ ...prev, name, phone }));
+  const handleContactSubmit = async (name: string, phone: string, email: string, service: string) => {
+    setChatState(prev => ({ ...prev, name, phone, email, serviceInterest: service }));
     
     // Simulate Submission
     setIsTyping(true);
     
     const payload = {
-        type: 'lead_submission', // Explicit type for webhook routing
-        threadId: threadId,
-        contactName: name,
-        contactPhone: phone,
+        formType: 'Chat Widget Lead',
+        name,
+        phone,
+        email,
+        serviceInterest: service,
         vehicle: chatState.vehicle,
+        threadId: threadId,
         source: 'Chat Widget',
         submittedAt: new Date().toISOString()
     };
 
     try {
-        await fetch('https://n8n.srv1046173.hstgr.cloud/webhook/chatbot', {
+        await fetch('https://n8n.srv1046173.hstgr.cloud/webhook/ppfprosformai', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -657,7 +661,7 @@ export const ChatWidget: React.FC = () => {
             id: Date.now().toString(),
             sender: 'bot',
             type: 'text',
-            content: `Done. I've secured a priority slot for your request, ${name}. A specialist will text you at ${phone} shortly.`
+            content: `Done. I've secured a priority slot for your request, ${name}. A specialist will contact you shortly.`
         },
         {
             id: (Date.now()+1).toString(),
@@ -734,7 +738,7 @@ export const ChatWidget: React.FC = () => {
                     </div>
                     <div>
                         <h3 className="font-bold text-sm tracking-wide text-white">PPF PROS <span className="text-brand-400">AI</span></h3>
-                        <p className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Protection Specialist</p>
+                        <p className="text--[10px] text-slate-400 uppercase tracking-wider font-medium">Protection Specialist</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-1 relative z-10">
@@ -821,7 +825,12 @@ export const ChatWidget: React.FC = () => {
                                         onSubmit={(e) => {
                                             e.preventDefault();
                                             const fd = new FormData(e.currentTarget);
-                                            handleContactSubmit(fd.get('name') as string, fd.get('phone') as string);
+                                            handleContactSubmit(
+                                                fd.get('name') as string,
+                                                fd.get('phone') as string,
+                                                fd.get('email') as string,
+                                                fd.get('service') as string
+                                            );
                                         }}
                                         className="space-y-3"
                                     >
@@ -844,6 +853,34 @@ export const ChatWidget: React.FC = () => {
                                                 required
                                             />
                                         </div>
+                                        <div className="relative group">
+                                            <Mail className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
+                                            <input 
+                                                name="email"
+                                                placeholder="Email Address"
+                                                type="email"
+                                                className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-all"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="relative group">
+                                            <Wrench className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
+                                            <select
+                                                name="service"
+                                                className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-all appearance-none"
+                                                required
+                                                defaultValue=""
+                                            >
+                                                <option value="" disabled>Select Service Interest</option>
+                                                <option value="PPF">Paint Protection Film</option>
+                                                <option value="Ceramic Coating">Ceramic Coating</option>
+                                                <option value="Window Tint">Window Tint</option>
+                                                <option value="Detailing">Detailing</option>
+                                                <option value="Multiple/Other">Multiple / Other</option>
+                                            </select>
+                                            <ChevronRight className="w-4 h-4 absolute right-3 top-2.5 text-slate-400 transform rotate-90 pointer-events-none" />
+                                        </div>
+
                                         <button type="submit" className="w-full py-2.5 bg-brand-500 text-white rounded-lg text-xs font-bold hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2">
                                             Submit Priority Request <Sparkles className="w-3 h-3" />
                                         </button>
