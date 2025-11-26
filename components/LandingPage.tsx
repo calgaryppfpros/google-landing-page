@@ -949,7 +949,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                         <div className="absolute -inset-4 bg-gradient-to-r from-blue-400 to-purple-500 rounded-2xl opacity-20 blur-xl group-hover:opacity-40 transition duration-500"></div>
                         <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white dark:border-slate-700">
                             <img 
-                                src="https://images.unsplash.com/photo-1544552866-d3ed42536cfd?auto=format&fit=crop&q=80&w=1000" 
+                                src="https://imagedelivery.net/M6yPAnH_Zd_28iUzKcUW1A/31d3c0e0-c7c8-4060-5154-66d55ce20400/public" 
                                 alt="Color Change PPF" 
                                 className="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700"
                             />
