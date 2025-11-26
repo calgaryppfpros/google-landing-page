@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LandingPage } from './components/LandingPage';
 import { SmartQuoteWidget } from './components/SmartQuoteWidget';
 import { GoogleReviewsWidget } from './components/GoogleReviewsWidget';
+import { ChatWidget } from './components/ChatWidget';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquareQuote, Star, CheckCircle2, X } from 'lucide-react';
 
@@ -19,14 +20,25 @@ export default function App() {
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [isBubbleVisible, setIsBubbleVisible] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    // Show bubble after 15 seconds to allow user to explore first
+    // Show bubble after 3 seconds to engage user
     const timer = setTimeout(() => {
       setIsBubbleVisible(true);
-    }, 15000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    // Hide bubble after 5 seconds of being visible, unless hovered
+    if (isBubbleVisible && !isHovered) {
+      const hideTimer = setTimeout(() => {
+        setIsBubbleVisible(false);
+      }, 5000);
+      return () => clearTimeout(hideTimer);
+    }
+  }, [isBubbleVisible, isHovered]);
 
   // Close reviews if quote opens to prevent stacking
   const handleOpenQuote = () => {
@@ -61,6 +73,9 @@ export default function App() {
         isOpen={isQuoteOpen} 
         onClose={() => setIsQuoteOpen(false)} 
       />
+      
+      {/* New AI Chatbot */}
+      <ChatWidget />
 
       {/* Floating Action Elements - Only visible when modal is closed */}
       {!isQuoteOpen && !isReviewsOpen && (
@@ -97,8 +112,12 @@ export default function App() {
             </motion.div>
 
             {/* Right Side Action Group */}
-            <div className="fixed bottom-6 right-6 z-30 flex flex-col gap-4 items-end pointer-events-none">
-                <div className="pointer-events-auto flex flex-col items-end gap-4">
+            <div className="fixed bottom-24 right-6 z-30 flex flex-col gap-4 items-end pointer-events-none">
+                <div 
+                  className="pointer-events-auto flex flex-col items-end gap-4"
+                  onMouseEnter={() => { setIsHovered(true); setIsBubbleVisible(true); }}
+                  onMouseLeave={() => setIsHovered(false)}
+                >
                     {/* Main FAB Container */}
                     <div className="relative">
                         {/* Engagement Bubble - Positioned on Top & Right Aligned */}
@@ -108,28 +127,28 @@ export default function App() {
                                     initial={{ opacity: 0, y: 10, scale: 0.8, x: 0 }}
                                     animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
                                     exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
-                                    className="absolute bottom-[calc(100%+20px)] right-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 z-40 w-max origin-bottom-right"
+                                    className="absolute bottom-[calc(100%+20px)] right-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 flex items-center gap-4 z-40 w-max origin-bottom-right"
                                 >
                                     <div className="relative flex-shrink-0">
-                                        <span className="relative flex h-2.5 w-2.5">
+                                        <span className="relative flex h-3 w-3">
                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500"></span>
+                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-500"></span>
                                         </span>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-bold text-xs leading-tight">Protect YOUR vehicle with premium PPF</span>
-                                        <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium">Smart form finds the perfect protection package ⚡</span>
+                                        <span className="font-bold text-sm leading-tight">Get an Instant Quote</span>
+                                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Takes less than 30s ⚡</span>
                                     </div>
-
-                                    {/* Arrow Pointing Down - Aligned to center of FAB (approx 30px from right) */}
-                                    <div className="absolute -bottom-1.5 right-6 w-2.5 h-2.5 bg-white dark:bg-slate-800 transform rotate-45 border-b border-r border-slate-100 dark:border-slate-700"></div>
-
+                                    
+                                    {/* Arrow Pointing Down - Aligned to center of FAB */}
+                                    <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-white dark:bg-slate-800 transform rotate-45 border-b border-r border-slate-100 dark:border-slate-700"></div>
+                                    
                                     {/* Close */}
-                                    <button
-                                        onClick={handleCloseBubble}
-                                        className="absolute -top-1.5 -right-1.5 bg-slate-100 dark:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full p-0.5 hover:scale-110 transition shadow-sm border border-slate-200 dark:border-slate-600"
+                                    <button 
+                                        onClick={handleCloseBubble} 
+                                        className="absolute -top-2 -right-2 bg-slate-100 dark:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full p-1 hover:scale-110 transition shadow-sm border border-slate-200 dark:border-slate-600"
                                     >
-                                        <X className="w-2.5 h-2.5" />
+                                        <X className="w-3 h-3" />
                                     </button>
                                 </motion.div>
                             )}
@@ -154,12 +173,10 @@ export default function App() {
                             whileHover={{ scale: 1.1, rotate: 0 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={() => { setIsQuoteOpen(true); setIsBubbleVisible(false); }}
-                            className="bg-gradient-to-br from-brand-400 to-brand-600 text-white p-4 rounded-full shadow-2xl shadow-brand-500/40 flex items-center justify-center group relative z-50"
+                            // Fixed width/height to match ChatWidget's FAB (w-14 h-14) for perfect stacking
+                            className="w-14 h-14 bg-gradient-to-br from-brand-400 to-brand-600 text-white rounded-full shadow-2xl shadow-brand-500/40 flex items-center justify-center group relative z-50"
                             aria-label="Get Smart Quote"
                         >
-                            <span className="absolute right-full mr-4 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                Get a Quote
-                            </span>
                             {/* Ping Effect */}
                             <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:animate-ping pointer-events-none"></div>
                             <MessageSquareQuote className="w-7 h-7" />
