@@ -682,63 +682,63 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6 }}
-                  className="bg-gradient-to-br from-slate-900 to-black dark:from-black dark:to-slate-950 rounded-3xl p-8 md:p-12 border border-slate-800 relative overflow-hidden"
+                  className="bg-gradient-to-br from-slate-900 to-black dark:from-black dark:to-slate-950 rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-12 border border-slate-800 relative overflow-hidden mx-auto"
               >
                   <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl"></div>
 
                   <div className="relative z-10">
-                      <div className="flex items-start gap-4 mb-8">
-                          <div className="p-3 bg-white/10 rounded-xl">
-                              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-start gap-3 md:gap-4 mb-6 md:mb-8">
+                          <div className="p-2.5 md:p-3 bg-white/10 rounded-xl flex-shrink-0">
+                              <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                               </svg>
                           </div>
-                          <div>
-                              <h3 className="text-3xl font-black text-white mb-2">The Real Cost of Doing Nothing</h3>
+                          <div className="text-center md:text-left">
+                              <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white mb-2">The Real Cost of Doing Nothing</h3>
                           </div>
                       </div>
 
-                      <div className="grid md:grid-cols-2 gap-8">
+                      <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
                           {/* Cost Breakdown */}
-                          <div className="space-y-4">
-                              <div className="flex justify-between items-center py-3 border-b border-slate-700">
-                                  <span className="text-slate-300">Average paint repairs (5 years):</span>
-                                  <span className="text-white font-bold text-xl">$2,500</span>
+                          <div className="space-y-3 md:space-y-4 max-w-md mx-auto w-full">
+                              <div className="flex justify-between items-center py-2.5 md:py-3 border-b border-slate-700 gap-3 md:gap-4">
+                                  <span className="text-slate-300 text-xs sm:text-sm md:text-base">Average paint repairs (5 years):</span>
+                                  <span className="text-white font-bold text-base sm:text-lg md:text-xl whitespace-nowrap">$2,500</span>
                               </div>
-                              <div className="flex justify-between items-center py-3 border-b border-slate-700">
-                                  <span className="text-slate-300">Windshield replacement:</span>
-                                  <span className="text-white font-bold text-xl">$1,000</span>
+                              <div className="flex justify-between items-center py-2.5 md:py-3 border-b border-slate-700 gap-3 md:gap-4">
+                                  <span className="text-slate-300 text-xs sm:text-sm md:text-base">Windshield replacement:</span>
+                                  <span className="text-white font-bold text-base sm:text-lg md:text-xl whitespace-nowrap">$1,000</span>
                               </div>
-                              <div className="flex justify-between items-center py-3 border-b border-slate-700">
-                                  <span className="text-slate-300">Interior sun damage:</span>
-                                  <span className="text-white font-bold text-xl">$1,500</span>
+                              <div className="flex justify-between items-center py-2.5 md:py-3 border-b border-slate-700 gap-3 md:gap-4">
+                                  <span className="text-slate-300 text-xs sm:text-sm md:text-base">Interior sun damage:</span>
+                                  <span className="text-white font-bold text-base sm:text-lg md:text-xl whitespace-nowrap">$1,500</span>
                               </div>
-                              <div className="flex justify-between items-center py-3 border-b border-slate-700">
-                                  <span className="text-slate-300">Lost resale value:</span>
-                                  <span className="text-white font-bold text-xl">$3,000</span>
+                              <div className="flex justify-between items-center py-2.5 md:py-3 border-b border-slate-700 gap-3 md:gap-4">
+                                  <span className="text-slate-300 text-xs sm:text-sm md:text-base">Lost resale value:</span>
+                                  <span className="text-white font-bold text-base sm:text-lg md:text-xl whitespace-nowrap">$3,000</span>
                               </div>
 
-                              <div className="flex justify-between items-center pt-6 mt-6 border-t-2 border-red-500">
-                                  <span className="text-white font-bold text-xl">Total damage over 5 years:</span>
-                                  <span className="text-red-500 font-black text-3xl">$8,000+</span>
+                              <div className="flex justify-between items-center pt-4 md:pt-6 mt-4 md:mt-6 border-t-2 border-red-500 gap-3 md:gap-4">
+                                  <span className="text-white font-bold text-sm sm:text-base md:text-xl">Total damage over 5 years:</span>
+                                  <span className="text-red-500 font-black text-xl sm:text-2xl md:text-3xl whitespace-nowrap">$8,000+</span>
                               </div>
                           </div>
 
                           {/* Protection Investment */}
-                          <div className="flex flex-col justify-center">
-                              <div className="bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl p-8 text-center">
-                                  <p className="text-brand-100 font-bold mb-2">Protection Investment</p>
-                                  <div className="text-6xl font-black text-white mb-4">$2,500</div>
-                                  <p className="text-brand-100 text-sm mb-6">One-time cost</p>
+                          <div className="flex flex-col justify-center max-w-md mx-auto w-full">
+                              <div className="bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl md:rounded-2xl p-5 sm:p-6 md:p-8 text-center">
+                                  <p className="text-brand-100 font-bold mb-2 text-xs sm:text-sm md:text-base">Protection Investment</p>
+                                  <div className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-3 md:mb-4">$2,500</div>
+                                  <p className="text-brand-100 text-xs md:text-sm mb-5 md:mb-6">One-time cost</p>
 
-                                  <div className="bg-white/10 backdrop-blur rounded-xl p-4 mb-6">
-                                      <p className="text-green-300 font-black text-2xl">You save $5,500+</p>
+                                  <div className="bg-white/10 backdrop-blur rounded-lg md:rounded-xl p-3 md:p-4 mb-5 md:mb-6">
+                                      <p className="text-green-300 font-black text-lg sm:text-xl md:text-2xl">You save $5,500+</p>
                                       <p className="text-white/80 text-xs mt-1">Over 5 years</p>
                                   </div>
 
                                   <button
                                       onClick={onOpenQuote}
-                                      className="w-full bg-white text-brand-600 font-bold py-4 px-6 rounded-xl hover:bg-brand-50 transition-all transform hover:scale-105 active:scale-95 shadow-xl"
+                                      className="w-full bg-white text-brand-600 font-bold py-3 md:py-4 px-4 md:px-6 rounded-lg md:rounded-xl hover:bg-brand-50 transition-all transform hover:scale-105 active:scale-95 shadow-xl text-xs sm:text-sm md:text-base"
                                   >
                                       Get Your Protection Quote
                                   </button>
@@ -842,7 +842,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                     {/* Generated Image Simulation */}
                     <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white dark:border-slate-700">
                         <img 
-                            src="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=1000" 
+                            src="https://imagedelivery.net/M6yPAnH_Zd_28iUzKcUW1A/73f4e3e4-0ffe-46a1-317d-046980761100/public" 
                             alt="Water beading on XPEL Ultimate Fusion protected paint" 
                             className="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700"
                         />
@@ -949,7 +949,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                         <div className="absolute -inset-4 bg-gradient-to-r from-blue-400 to-purple-500 rounded-2xl opacity-20 blur-xl group-hover:opacity-40 transition duration-500"></div>
                         <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white dark:border-slate-700">
                             <img 
-                                src="https://imagedelivery.net/M6yPAnH_Zd_28iUzKcUW1A/cc93452f-1942-44ed-a831-493583060600/public" 
+                                src="https://images.unsplash.com/photo-1544552866-d3ed42536cfd?auto=format&fit=crop&q=80&w=1000" 
                                 alt="Color Change PPF" 
                                 className="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700"
                             />
@@ -1105,7 +1105,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                   >
                       <div className="absolute -inset-4 bg-brand-400 rounded-3xl opacity-20 blur-2xl transform rotate-3"></div>
                       <img 
-                        src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1000" 
+                        src="https://imagedelivery.net/M6yPAnH_Zd_28iUzKcUW1A/cc93452f-1942-44ed-a831-493583060600/public" 
                         alt="PPF Pros Workshop" 
                         className="relative rounded-3xl shadow-2xl border border-white dark:border-slate-700 object-cover h-[500px] w-full"
                       />
