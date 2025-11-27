@@ -130,7 +130,19 @@ const PPF_PACKAGE_DESCRIPTIONS: Record<string, string> = {
     [PPFPackage.TRACK]: "Gold package + Rocker Panels. Essential for gravel roads, track days, or sticky tires.",
     [PPFPackage.DIAMOND]: "The ultimate solution. Every painted surface is wrapped. Change the color or freeze it in time."
 };
+const PPF_PACKAGE_PRICES: Record<PPFPackage, string> = {
+    [PPFPackage.BRONZE]: "Starting at $399",
+    [PPFPackage.SILVER]: "Starting at $699",
+    [PPFPackage.GOLD]: "Starting at $1,399",
+    [PPFPackage.TRACK]: "Starting at $1,899",
+    [PPFPackage.DIAMOND]: "Starting at $3,999"
+};
 
+const CERAMIC_PACKAGE_PRICES: Record<CeramicPackage, string> = {
+    [CeramicPackage.PLUS]: "Starting at $899",
+    [CeramicPackage.PREMIUM]: "Starting at $1,199",
+    [CeramicPackage.SUPREME]: "Starting at $1,499"
+};
 // --- Enhanced Tooltip Component with Portal ---
 interface TooltipProps {
     text: string;
