@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, ChevronRight, Zap, Shield, Sparkles, User, Phone, Car, CheckCircle2, Bot, Loader2, Minimize2, RefreshCcw, CornerDownLeft, ThumbsUp, ThumbsDown, Trash2, Mail, Wrench } from 'lucide-react';
-import { CAR_MAKES_AND_MODELS } from '../types';
+import { MessageSquare, X, Send, ChevronRight, Zap, Shield, Sparkles, User, Phone, Car, CheckCircle2, Bot, Loader2, Minimize2, RefreshCcw, CornerDownLeft, ThumbsUp, ThumbsDown, Trash2, Mail, Wrench, Check } from 'lucide-react';
+import { CAR_MAKES_AND_MODELS, ServiceType } from '../types';
+import { INITIAL_STATE } from '../services/quoteLogic';
 
 // --- Types ---
 
@@ -19,14 +19,14 @@ interface Message {
 
 interface ChatState {
   name: string;
-  vehicle: string;
   phone: string;
   email: string;
-  serviceInterest: string;
+  vehicle: { year: string; make: string; model: string };
+  services: string[];
 }
 
 // --- KNOWLEDGE BASE ENGINE ---
-
+// (Kept same as before, omitted for brevity but included in full file below)
 interface KnowledgeChunk {
     id: string;
     triggers: string[];
@@ -36,7 +36,7 @@ interface KnowledgeChunk {
 }
 
 const KNOWLEDGE_BASE: KnowledgeChunk[] = [
-    // --- GLOBAL ---
+    // ... (Same Knowledge Base Content) ...
     {
         id: 'G1',
         triggers: ['who are you', 'what do you do', 'about you', 'shop'],
@@ -182,7 +182,6 @@ const KNOWLEDGE_BASE: KnowledgeChunk[] = [
     }
 ];
 
-
 // --- Animation Variants ---
 
 const springTransition = { type: "spring" as const, stiffness: 350, damping: 30 };
@@ -216,7 +215,7 @@ const TypingIndicator = () => (
 );
 
 // Vehicle Selector Form Component
-const VehicleSelectorForm = ({ onSubmit }: { onSubmit: (vehicleString: string) => void }) => {
+const VehicleSelectorForm = ({ onSubmit }: { onSubmit: (data: { year: string, make: string, model: string }) => void }) => {
     const [year, setYear] = useState('');
     const [make, setMake] = useState('');
     const [model, setModel] = useState('');
@@ -224,7 +223,6 @@ const VehicleSelectorForm = ({ onSubmit }: { onSubmit: (vehicleString: string) =
 
     // Prepare datalist options
     const makes = Object.keys(CAR_MAKES_AND_MODELS).sort();
-    // Try to find models if make matches one in our DB, otherwise empty list
     const foundMake = makes.find(m => m.toLowerCase() === make.toLowerCase());
     const models = foundMake ? CAR_MAKES_AND_MODELS[foundMake] : [];
 
@@ -232,7 +230,7 @@ const VehicleSelectorForm = ({ onSubmit }: { onSubmit: (vehicleString: string) =
         e.preventDefault();
         if (year && make && model) {
             setSubmitted(true);
-            onSubmit(`${year} ${make} ${model}`);
+            onSubmit({ year, make, model });
         }
     };
 
@@ -300,6 +298,120 @@ const VehicleSelectorForm = ({ onSubmit }: { onSubmit: (vehicleString: string) =
             >
                 Confirm Vehicle <ChevronRight className="w-3 h-3" />
             </button>
+        </form>
+    );
+};
+
+// High Tech Contact Form with Multi-Select Services
+const ContactForm = ({ onSubmit }: { onSubmit: (name: string, phone: string, email: string, services: string[]) => void }) => {
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
+    const [selectedServices, setSelectedServices] = useState<string[]>([]);
+    const [submitted, setSubmitted] = useState(false);
+
+    const SERVICES = [
+        ServiceType.PPF,
+        ServiceType.CERAMIC,
+        ServiceType.TINT,
+        ServiceType.DETAILING,
+        ServiceType.WINDSHIELD
+    ];
+
+    const toggleService = (s: string) => {
+        if (selectedServices.includes(s)) setSelectedServices(prev => prev.filter(i => i !== s));
+        else setSelectedServices(prev => [...prev, s]);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitted(true);
+        onSubmit(name, phone, email, selectedServices.length > 0 ? selectedServices : ["Not Specified"]);
+    };
+
+    if (submitted) {
+        return (
+            <div className="w-full bg-slate-50 dark:bg-slate-900 rounded-lg p-3 border border-brand-200 dark:border-brand-900 text-brand-600 dark:text-brand-400 text-sm font-bold">
+                 <div className="flex items-center gap-2 mb-1">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Request Sent
+                 </div>
+                 <div className="text-xs text-slate-500 font-normal pl-6">
+                    We'll contact {name.split(' ')[0]} shortly.
+                 </div>
+            </div>
+        );
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="w-full min-w-[260px] space-y-3 mt-1">
+             <div className="flex items-center gap-2 mb-3 border-b border-slate-100 dark:border-slate-700/50 pb-2">
+                <Shield className="w-4 h-4 text-brand-500" />
+                <span className="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Encrypted Priority Link</span>
+            </div>
+
+            <div className="relative group">
+                <User className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
+                <input 
+                    placeholder="Full Name"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-all placeholder-slate-400 dark:text-white"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
+            </div>
+            <div className="relative group">
+                <Phone className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
+                <input 
+                    placeholder="Mobile Number"
+                    type="tel"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-all placeholder-slate-400 dark:text-white"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                />
+            </div>
+            <div className="relative group">
+                <Mail className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
+                <input 
+                    placeholder="Email Address"
+                    type="email"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-all placeholder-slate-400 dark:text-white"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+            </div>
+
+            {/* Multi-Select Services */}
+            <div>
+                <p className="text-[10px] uppercase font-bold text-slate-400 mb-1.5 ml-1">Services of Interest:</p>
+                <div className="flex flex-wrap gap-1.5">
+                    {SERVICES.map(s => (
+                        <button
+                            type="button"
+                            key={s}
+                            onClick={() => toggleService(s)}
+                            className={`px-2 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1
+                                ${selectedServices.includes(s) 
+                                    ? 'bg-brand-500 text-white border-brand-500 shadow-sm' 
+                                    : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-brand-300'
+                                }`}
+                        >
+                            {selectedServices.includes(s) && <Check className="w-3 h-3" />}
+                            {s.replace('Protection', '').replace('Coating', '').trim()}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <button type="submit" className="w-full py-2.5 bg-brand-500 text-white rounded-lg text-xs font-bold hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2 mt-2">
+                Submit Priority Request <Sparkles className="w-3 h-3" />
+            </button>
+            <p className="text-[10px] text-center text-slate-400 flex items-center justify-center gap-1">
+                <Shield className="w-3 h-3" />
+                Your information is kept private.
+            </p>
         </form>
     );
 };
@@ -378,10 +490,10 @@ export const ChatWidget: React.FC = () => {
 
   const [chatState, setChatState] = useState<ChatState>({
     name: '',
-    vehicle: '',
     phone: '',
     email: '',
-    serviceInterest: ''
+    vehicle: { year: '', make: '', model: '' },
+    services: []
   });
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -437,7 +549,7 @@ export const ChatWidget: React.FC = () => {
         }
       ];
       setMessages(initialMsgs);
-      setChatState({ name: '', vehicle: '', phone: '', email: '', serviceInterest: '' });
+      setChatState({ name: '', phone: '', email: '', vehicle: { year: '', make: '', model: '' }, services: [] });
       localStorage.removeItem('ppf_chat_history');
       localStorage.setItem('ppf_chat_thread_id', newThreadId);
   };
@@ -617,29 +729,46 @@ export const ChatWidget: React.FC = () => {
 
   // --- Form Handlers ---
 
-  const handleVehicleSubmit = (vehicleString: string) => {
-    setChatState(prev => ({ ...prev, vehicle: vehicleString }));
-    // Transition to Contact Form
+  const handleVehicleSubmit = (vehicleData: { year: string, make: string, model: string }) => {
+    setChatState(prev => ({ ...prev, vehicle: vehicleData }));
+    const vehicleString = `${vehicleData.year} ${vehicleData.make} ${vehicleData.model}`;
     simulateBotResponse([
       { id: Date.now().toString(), sender: 'bot', type: 'text', content: `Excellent choice. The ${vehicleString} deserves the best protection.` },
       { id: (Date.now()+1).toString(), sender: 'bot', type: 'form-contact', content: "Where should I send the detailed estimate?" }
     ]);
   };
 
-  const handleContactSubmit = async (name: string, phone: string, email: string, service: string) => {
-    setChatState(prev => ({ ...prev, name, phone, email, serviceInterest: service }));
+  const handleContactSubmit = async (name: string, phone: string, email: string, services: string[]) => {
+    setChatState(prev => ({ ...prev, name, phone, email, services }));
     
     // Simulate Submission
     setIsTyping(true);
     
+    const firstName = name.split(' ')[0];
+    const lastName = name.split(' ').slice(1).join(' ') || '';
+
+    // CONSTRUCT PAYLOAD EXACTLY LIKE QUOTE WIDGET
     const payload = {
-        formType: 'Chat Widget Lead',
-        name,
-        phone,
-        email,
-        serviceInterest: service,
-        vehicle: chatState.vehicle,
+        ...INITIAL_STATE, // Use initial defaults from Quote Widget
+        services: services, // Override with Chat choices
+        vehicle: {
+            ...INITIAL_STATE.vehicle,
+            year: chatState.vehicle.year,
+            make: chatState.vehicle.make,
+            model: chatState.vehicle.model,
+        },
+        contact: {
+            ...INITIAL_STATE.contact,
+            firstName,
+            lastName,
+            phone,
+            email,
+            method: 'Text' as const
+        },
+        notes: `Chat Widget Lead. Thread ID: ${threadId}`,
+        // Add extra fields for webhook context if needed
         threadId: threadId,
+        formType: 'Chat Widget Lead',
         source: 'Chat Widget',
         submittedAt: new Date().toISOString()
     };
@@ -650,6 +779,19 @@ export const ChatWidget: React.FC = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
+
+        // Exact GTM Event from Quote Widget
+        if (window.dataLayer) {
+             window.dataLayer.push({
+                event: 'form_submission',
+                form_type: 'chat_widget_lead',
+                services_count: services.length,
+                has_ppf: services.includes(ServiceType.PPF),
+                has_ceramic: services.includes(ServiceType.CERAMIC),
+                has_tint: services.includes(ServiceType.TINT)
+            });
+        }
+
     } catch (e) {
         console.error("Chat lead submission error", e);
     }
@@ -661,7 +803,7 @@ export const ChatWidget: React.FC = () => {
             id: Date.now().toString(),
             sender: 'bot',
             type: 'text',
-            content: `Done. I've secured a priority slot for your request, ${name}. A specialist will contact you shortly.`
+            content: `Done. I've secured a priority slot for your request, ${firstName}. A specialist will contact you shortly.`
         },
         {
             id: (Date.now()+1).toString(),
@@ -816,81 +958,8 @@ export const ChatWidget: React.FC = () => {
 
                             {/* --- High Tech Form: Contact --- */}
                              {msg.type === 'form-contact' && (
-                                <div className="w-full min-w-[240px] mt-2">
-                                    <div className="flex items-center gap-2 mb-3 border-b border-slate-100 dark:border-slate-700/50 pb-2">
-                                        <Shield className="w-4 h-4 text-brand-500" />
-                                        <span className="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Encrypted Link</span>
-                                    </div>
-                                    <form 
-                                        onSubmit={(e) => {
-                                            e.preventDefault();
-                                            const fd = new FormData(e.currentTarget);
-                                            handleContactSubmit(
-                                                fd.get('name') as string,
-                                                fd.get('phone') as string,
-                                                fd.get('email') as string,
-                                                fd.get('service') as string
-                                            );
-                                        }}
-                                        className="space-y-3"
-                                    >
-                                        <div className="relative group">
-                                            <User className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
-                                            <input 
-                                                name="name"
-                                                placeholder="Full Name"
-                                                className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-all"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="relative group">
-                                            <Phone className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
-                                            <input 
-                                                name="phone"
-                                                placeholder="Mobile Number"
-                                                type="tel"
-                                                className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-all"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="relative group">
-                                            <Mail className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
-                                            <input 
-                                                name="email"
-                                                placeholder="Email Address"
-                                                type="email"
-                                                className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-all"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="relative group">
-                                            <Wrench className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
-                                            <select
-                                                name="service"
-                                                className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-all appearance-none"
-                                                required
-                                                defaultValue=""
-                                            >
-                                                <option value="" disabled>Select Service Interest</option>
-                                                <option value="PPF">Paint Protection Film</option>
-                                                <option value="Ceramic Coating">Ceramic Coating</option>
-                                                <option value="Window Tint">Window Tint</option>
-                                                <option value="Detailing">Detailing</option>
-                                                <option value="Multiple/Other">Multiple / Other</option>
-                                            </select>
-                                            <ChevronRight className="w-4 h-4 absolute right-3 top-2.5 text-slate-400 transform rotate-90 pointer-events-none" />
-                                        </div>
-
-                                        <button type="submit" className="w-full py-2.5 bg-brand-500 text-white rounded-lg text-xs font-bold hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2">
-                                            Submit Priority Request <Sparkles className="w-3 h-3" />
-                                        </button>
-                                        <p className="text-[10px] text-center text-slate-400 flex items-center justify-center gap-1">
-                                            <Shield className="w-3 h-3" />
-                                            Your information is kept private.
-                                        </p>
-                                    </form>
-                                </div>
-                            )}
+                                <ContactForm onSubmit={handleContactSubmit} />
+                             )}
 
                              {/* --- Feedback --- */}
                              {msg.type === 'feedback' && (
