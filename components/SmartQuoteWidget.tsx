@@ -131,20 +131,6 @@ const PPF_PACKAGE_DESCRIPTIONS: Record<string, string> = {
     [PPFPackage.DIAMOND]: "The ultimate solution. Every painted surface is wrapped. Change the color or freeze it in time."
 };
 
-const PPF_PACKAGE_PRICES: Record<PPFPackage, string> = {
-    [PPFPackage.BRONZE]: "$399 - $599",
-    [PPFPackage.SILVER]: "$699 - $999",
-    [PPFPackage.GOLD]: "$1,399 - $1,999",
-    [PPFPackage.TRACK]: "$1,899 - $2,499",
-    [PPFPackage.DIAMOND]: "$3,999 - $9,999"
-};
-
-const CERAMIC_PACKAGE_PRICES: Record<CeramicPackage, string> = {
-    [CeramicPackage.PLUS]: "$899 - $1,349",
-    [CeramicPackage.PREMIUM]: "$1,199 - $1,649",
-    [CeramicPackage.SUPREME]: "$1,499 - $2,499"
-};
-
 // --- Enhanced Tooltip Component with Portal ---
 interface TooltipProps {
     text: string;
