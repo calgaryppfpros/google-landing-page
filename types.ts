@@ -107,7 +107,7 @@ export interface QuoteState {
     email: string;
     method: 'Text' | 'Call' | 'Email';
   };
-  promoCode: string;
+  promoCodes: string[];
   notes: string;
 }
 
@@ -138,6 +138,7 @@ export const PROMOS: Promo[] = [
   { code: 'TINTBUNDLE10', description: '10-20% off Tint', rules: 'When added to PPF Booking' },
   { code: 'CERAMICPLUS50', description: '50% off Ceramic Coating', rules: 'With Full Wrap' },
   { code: 'FALLSHIELD25', description: '25% off Front & Rocker Panel', rules: 'New customers only' },
+  { code: 'BLACKFRIDAY', description: 'Black Friday: Free Windshield Film', rules: 'With any Full Front PPF or higher' },
 ];
 
 // --- CAR DB ---
