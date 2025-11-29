@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Check, ShieldCheck, Sparkles, Car, Info, Tag, ThermometerSun, BrainCircuit, Cpu, PlusCircle, Gift, MessageSquare, Phone, Mail, Ticket, Ghost, Palette, Droplets, Search, Eraser, Armchair, AlertCircle, MousePointerClick, RotateCcw, ArrowRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Check, ShieldCheck, Sparkles, Car, Info, Tag, ThermometerSun, BrainCircuit, Cpu, PlusCircle, Gift, MessageSquare, Phone, Mail, Ticket, Ghost, Palette, Droplets, Search, Eraser, Armchair, AlertCircle, MousePointerClick, RotateCcw, ArrowRight, Shield, Sun, Eye, Umbrella, ScanLine, Zap, Radar, LocateFixed } from 'lucide-react';
 import { 
   QuoteState, ServiceType, PPFPackage, CeramicPackage, 
   UndercoatingPackage, TintType, TintPackage, TINT_ADDONS_LIST, PROMOS, PPFFilmType, CAR_COLORS,
@@ -130,19 +130,7 @@ const PPF_PACKAGE_DESCRIPTIONS: Record<string, string> = {
     [PPFPackage.TRACK]: "Gold package + Rocker Panels. Essential for gravel roads, track days, or sticky tires.",
     [PPFPackage.DIAMOND]: "The ultimate solution. Every painted surface is wrapped. Change the color or freeze it in time."
 };
-const PPF_PACKAGE_PRICES: Record<PPFPackage, string> = {
-    [PPFPackage.BRONZE]: "Starting at $399",
-    [PPFPackage.SILVER]: "Starting at $699",
-    [PPFPackage.GOLD]: "Starting at $1,399",
-    [PPFPackage.TRACK]: "Starting at $1,899",
-    [PPFPackage.DIAMOND]: "Starting at $3,999"
-};
 
-const CERAMIC_PACKAGE_PRICES: Record<CeramicPackage, string> = {
-    [CeramicPackage.PLUS]: "Starting at $899",
-    [CeramicPackage.PREMIUM]: "Starting at $1,199",
-    [CeramicPackage.SUPREME]: "Starting at $1,499"
-};
 // --- Enhanced Tooltip Component with Portal ---
 interface TooltipProps {
     text: string;
@@ -257,8 +245,11 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  
+  // Promo State
+  const [promoInput, setPromoInput] = useState('');
   const [promoError, setPromoError] = useState('');
-  const [validPromo, setValidPromo] = useState<string | null>(null);
+  
   const [validationMsg, setValidationMsg] = useState<string | null>(null);
   
   // Tooltip Management State
@@ -270,6 +261,7 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
 
   // Framer Motion
   const shouldReduceMotion = useReducedMotion();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const steps = useMemo(() => buildSteps(state), [state.services, state.ppf.filmType]);
   const currentStep = isSuccess ? 'SUCCESS' : steps[currentStepIndex];
@@ -289,6 +281,13 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
     return () => document.body.classList.remove('no-scroll');
   }, [isOpen]);
 
+  // Scroll to Top Effect
+  useEffect(() => {
+      if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+  }, [currentStepIndex, isSuccess]);
+
   // AI Step Logic
   useEffect(() => {
     if (currentStep === 'AI_MATCHING') {
@@ -301,7 +300,7 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
             if (ops.length === 0) {
                 setTimeout(() => handleNext(), 1000);
             }
-        }, 3000); // Slightly longer for the enhanced animation
+        }, 4500); // Extended slightly for new animation
         return () => clearTimeout(timer);
     }
   }, [currentStep]);
@@ -327,8 +326,8 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
         setState(JSON.parse(JSON.stringify(INITIAL_STATE)));
         setCurrentStepIndex(0);
         setIsSuccess(false);
+        setPromoInput('');
         setPromoError('');
-        setValidPromo(null);
         setValidationMsg(null);
         setIsAnalyzing(false);
         setOpportunities([]);
@@ -336,20 +335,38 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handlePromoCheck = () => {
-      if (!state.promoCode) return;
-      const promo = PROMOS.find(p => p.code === state.promoCode.toUpperCase());
-      if (promo) {
-          setValidPromo(promo.description);
+  // Promo Handlers
+  const handleAddPromo = () => {
+      if (!promoInput) return;
+      const codeUpper = promoInput.toUpperCase().trim();
+      
+      // Check if already applied
+      if (state.promoCodes.includes(codeUpper)) {
+          setPromoError('This code is already active.');
+          return;
+      }
+      
+      // Validate against PROMOS list
+      const isValid = PROMOS.some(p => p.code === codeUpper);
+      
+      if (isValid) {
+          updateState({ promoCodes: [...state.promoCodes, codeUpper] });
+          setPromoInput('');
           setPromoError('');
       } else {
-          setValidPromo(null);
           setPromoError('Invalid or expired promo code.');
       }
   };
 
+  const handleRemovePromo = (code: string) => {
+      updateState({ promoCodes: state.promoCodes.filter(c => c !== code) });
+  };
+
   const handleAddService = (service: ServiceType, startStep: WizardStep) => {
-    const newServices = [...state.services, service];
+    const newServices = state.services.includes(service) 
+        ? state.services // No op if already included
+        : [...state.services, service];
+    
     const newState = { ...state, services: newServices };
     
     // Update state immediately
@@ -377,11 +394,12 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
           newAddons.push(addon);
       }
 
+      const newCodes = state.promoCodes.includes(code) ? state.promoCodes : [...state.promoCodes, code];
+
       updateState({ 
           ppf: { ...state.ppf, addOns: newAddons },
-          promoCode: code 
+          promoCodes: newCodes 
       });
-      setValidPromo("Free Add-on Applied!");
   };
 
   const handleNext = () => {
@@ -492,36 +510,73 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
       return all;
   };
 
+  // Service Step Card Helper
+  const ServiceCard = ({ type, icon: Icon, desc, selected, onClick }: any) => (
+      <div 
+        onClick={onClick}
+        className={`p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 relative overflow-hidden group 
+            ${selected 
+                ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20 ring-1 ring-brand-500 shadow-lg transform scale-[1.02]' 
+                : 'border-slate-200 dark:border-slate-700 hover:border-brand-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+            }`}
+      >
+          {selected && (
+            <div className="absolute top-3 right-3 w-6 h-6 bg-brand-500 rounded-full flex items-center justify-center shadow-md animate-in zoom-in">
+                <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />
+            </div>
+          )}
+          
+          <div className="flex flex-col gap-3">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors
+                  ${selected ? 'bg-brand-500 text-white shadow-brand-500/30 shadow-lg' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-brand-500'}`}>
+                  <Icon className="w-6 h-6" />
+              </div>
+              <div>
+                  <h4 className={`font-bold text-lg mb-1 transition-colors ${selected ? 'text-brand-700 dark:text-brand-300' : 'text-slate-900 dark:text-white'}`}>{type}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{desc}</p>
+              </div>
+          </div>
+      </div>
+  );
+
   // Render Content Helper
   const renderStepContent = () => {
     switch (currentStep) {
       case 'SERVICES':
+        const SERVICE_DETAILS = [
+            { type: ServiceType.PPF, icon: Shield, desc: "Stop rock chips & scratches." },
+            { type: ServiceType.TINT, icon: Sun, desc: "Heat rejection & privacy." },
+            { type: ServiceType.CERAMIC, icon: Droplets, desc: "Hydrophobic shine & easy cleaning." },
+            { type: ServiceType.PAINT_CORRECTION, icon: Sparkles, desc: "Remove swirls & restore gloss." },
+            { type: ServiceType.INTERIOR, icon: Armchair, desc: "Protect leather & fabric." },
+            { type: ServiceType.WINDSHIELD, icon: Eye, desc: "Prevent chips & cracks." },
+            { type: ServiceType.UNDERCOATING, icon: Umbrella, desc: "Winter rust protection." },
+            { type: ServiceType.DETAILING, icon: Car, desc: "Deep cleaning & restoration." },
+        ];
+
         return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold text-slate-800 dark:text-white">Which services are you interested in?</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {Object.values(ServiceType).map((service) => (
-                <label key={service} 
-                    className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all 
-                        ${state.services.includes(service) 
-                            ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20 ring-1 ring-brand-200 dark:ring-brand-800 shadow-sm' 
-                            : 'border-slate-200 dark:border-slate-700 hover:border-brand-200 dark:hover:border-slate-500 hover:bg-white dark:hover:bg-slate-800'
-                        }`}
-                >
-                  <input 
-                    type="checkbox" 
-                    className="w-5 h-5 text-brand-500 rounded focus:ring-brand-400 bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600"
-                    checked={state.services.includes(service)}
-                    onChange={(e) => {
-                      const newServices = e.target.checked 
-                        ? [...state.services, service]
-                        : state.services.filter(s => s !== service);
-                      updateState({ services: newServices });
-                    }}
-                  />
-                  <span className="ml-3 font-medium text-slate-900 dark:text-slate-100">{service}</span>
-                </label>
-              ))}
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+                 <h3 className="text-2xl font-black text-slate-900 dark:text-white">Build Your Protection Package</h3>
+                 <p className="text-slate-500 dark:text-slate-400 text-sm">Select all services you're interested in.</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+               {SERVICE_DETAILS.map(s => (
+                   <ServiceCard 
+                        key={s.type}
+                        type={s.type.split('(')[0].trim()} // Simpler title
+                        icon={s.icon}
+                        desc={s.desc}
+                        selected={state.services.includes(s.type)}
+                        onClick={() => {
+                             const newServices = state.services.includes(s.type) 
+                                ? state.services.filter(i => i !== s.type)
+                                : [...state.services, s.type];
+                             updateState({ services: newServices });
+                        }}
+                   />
+               ))}
             </div>
           </div>
         );
@@ -669,9 +724,6 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
                     <div className="flex justify-between items-start gap-2">
                         <div className="flex-1">
                             <span className="font-bold text-slate-900 dark:text-white block">{label}</span>
-                            <div className="mt-2 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-950/30 border border-green-300 dark:border-green-900 w-fit">
-                                <span className="text-xs font-bold text-green-700 dark:text-green-400">Typically {PPF_PACKAGE_PRICES[pkg]}</span>
-                            </div>
                         </div>
                         {state.ppf.package === pkg && <Check className="w-5 h-5 text-brand-600 dark:text-brand-400 flex-shrink-0" />}
                     </div>
@@ -857,9 +909,6 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
                   <div className="flex justify-between items-start gap-2">
                     <div className="flex-1">
                         <span className="font-bold text-slate-900 dark:text-white block">{pkg}</span>
-                        <div className="mt-2 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-950/30 border border-green-300 dark:border-green-900 w-fit">
-                            <span className="text-xs font-bold text-green-700 dark:text-green-400">Typically {CERAMIC_PACKAGE_PRICES[pkg]}</span>
-                        </div>
                     </div>
                     {state.ceramic.package === pkg && <Check className="w-5 h-5 text-brand-600 dark:text-brand-400 flex-shrink-0" />}
                   </div>
@@ -1193,86 +1242,85 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
         case 'AI_MATCHING':
             if (isAnalyzing) {
                  return (
-                    <div className="flex flex-col items-center justify-center h-80 text-center space-y-8 relative overflow-hidden">
-                        {/* Background ambient effects */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-50/50 to-transparent dark:via-brand-900/10 pointer-events-none" />
+                    <div className="flex flex-col items-center justify-center h-96 text-center relative overflow-hidden bg-slate-950 rounded-2xl border border-slate-800">
+                        {/* Background Grid Scanning */}
+                        <div className="absolute inset-0 bg-[linear-gradient(rgba(14,165,233,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(14,165,233,0.1)_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_100%)]"></div>
                         
-                        <div className="relative">
-                            {/* Orbiting Rings */}
-                            {!shouldReduceMotion && (
-                                <>
-                                    {/* Ring 1 - Slow Large */}
-                                    <motion.div 
-                                        className="absolute -inset-12 rounded-full border border-brand-200/40 dark:border-brand-700/30 border-dashed"
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                    />
-                                    {/* Ring 2 - Medium Reverse */}
-                                     <motion.div 
-                                        className="absolute -inset-8 rounded-full border border-purple-200/40 dark:border-purple-700/30"
-                                        animate={{ rotate: -360 }}
-                                        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                                    />
-                                    {/* Ring 3 - Fast Small */}
-                                     <motion.div 
-                                        className="absolute -inset-4 rounded-full border border-brand-300/30 dark:border-brand-500/20"
-                                        animate={{ rotate: 360, scale: [0.95, 1.05, 0.95] }}
-                                        transition={{ 
-                                            rotate: { duration: 10, repeat: Infinity, ease: "linear" },
-                                            scale: { duration: 3, repeat: Infinity, ease: "easeInOut" }
-                                        }}
-                                    />
-                                </>
-                            )}
+                        {/* Scanning Line */}
+                        <motion.div 
+                             className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-500/20 to-transparent z-0 pointer-events-none"
+                             animate={{ top: ['-100%', '200%'] }}
+                             transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                             style={{ height: '50%' }}
+                        />
 
-                            {/* Central Icon Container */}
-                            <motion.div 
-                                className="relative z-10 w-24 h-24 bg-gradient-to-tr from-brand-400 to-brand-600 rounded-full flex items-center justify-center shadow-2xl"
-                                animate={shouldReduceMotion ? {} : { 
-                                    boxShadow: [
-                                        "0 0 0px rgba(56, 189, 248, 0)", 
-                                        "0 0 30px rgba(56, 189, 248, 0.6)", 
-                                        "0 0 0px rgba(56, 189, 248, 0)"
-                                    ] 
-                                }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                            >
-                                <motion.div
-                                   animate={shouldReduceMotion ? {} : { scale: [1, 1.1, 1] }}
-                                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        <div className="relative z-10 mb-8">
+                            {/* Central Radar Pulse */}
+                            <div className="relative flex items-center justify-center">
+                                <motion.div 
+                                    className="w-24 h-24 rounded-full border border-brand-500/30 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm shadow-[0_0_30px_rgba(14,165,233,0.2)]"
+                                    animate={{ boxShadow: ['0 0 0px rgba(14,165,233,0)', '0 0 30px rgba(14,165,233,0.4)', '0 0 0px rgba(14,165,233,0)'] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
                                 >
-                                    <BrainCircuit className="w-12 h-12 text-white" />
+                                    <BrainCircuit className="w-10 h-10 text-brand-400" />
                                 </motion.div>
-                            </motion.div>
+                                {/* Expanding Rings */}
+                                {[1, 2, 3].map((i) => (
+                                    <motion.div
+                                        key={i}
+                                        className="absolute inset-0 rounded-full border border-brand-500/30"
+                                        initial={{ opacity: 0, scale: 1 }}
+                                        animate={{ opacity: [0, 0.5, 0], scale: [1, 2.5] }}
+                                        transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
+                                    />
+                                ))}
+                            </div>
                         </div>
 
-                        <div className="relative z-10 max-w-xs mx-auto">
+                        <div className="relative z-10 space-y-3 max-w-xs mx-auto">
+                            <motion.div className="flex items-center justify-center gap-2 text-brand-400 font-mono text-xs font-bold tracking-widest uppercase mb-1">
+                                <ScanLine className="w-4 h-4 animate-pulse" />
+                                Analyzing System
+                            </motion.div>
                             <motion.h3 
-                                className="text-xl font-bold text-slate-900 dark:text-white"
-                                animate={{ opacity: [0.5, 1, 0.5] }}
-                                transition={{ duration: 1.5, repeat: Infinity }}
+                                animate={{ opacity: [0.8, 1, 0.8] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                                className="text-xl font-bold text-white tracking-wide"
                             >
-                                Analyzing Build Configuration...
+                                Checking Database...
                             </motion.h3>
-                            <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">
-                                Optimizing package value and checking compatibility.
-                            </p>
+                            <div className="flex justify-center gap-2 mt-2">
+                                {['Vehicle Spec', 'Promo Codes', 'Availability'].map((item, i) => (
+                                    <motion.div 
+                                        key={i}
+                                        className="text-[10px] bg-slate-900 border border-slate-800 text-slate-400 px-2 py-1 rounded"
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.5 + (i * 0.3) }}
+                                    >
+                                        {item}
+                                    </motion.div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                  );
             }
 
             return (
-                <div className="space-y-6">
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
                     <div className="text-center mb-6">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full mb-4">
-                            <Check className="w-8 h-8" />
-                        </div>
+                        <motion.div 
+                            initial={{ scale: 0 }} animate={{ scale: 1 }}
+                            className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-green-400 to-emerald-600 text-white rounded-full mb-4 shadow-lg shadow-green-500/30"
+                        >
+                            <Check className="w-8 h-8 stroke-[3px]" />
+                        </motion.div>
                         <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Optimization Complete</h3>
                         {opportunities.length > 0 ? (
-                             <p className="text-slate-600 dark:text-slate-400 mt-2">We found {opportunities.length} smart opportunities for your build.</p>
+                             <p className="text-slate-600 dark:text-slate-400 mt-2">We found {opportunities.length} exclusive opportunities for you.</p>
                         ) : (
-                             <p className="text-slate-600 dark:text-slate-400 mt-2">Your build looks great! Proceed to review.</p>
+                             <p className="text-slate-600 dark:text-slate-400 mt-2">Your build is fully optimized. Proceed to review.</p>
                         )}
                     </div>
                     
@@ -1280,71 +1328,85 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
                         {opportunities.map((op, idx) => (
                             <motion.div 
                                 key={idx}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.1 }}
-                                className="border-2 border-brand-100 dark:border-brand-900/50 bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm hover:border-brand-300 dark:hover:border-brand-700 transition-all"
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.15 }}
+                                className={`border p-1 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group
+                                    ${op.type === 'FREE_ADDON' ? 'border-purple-200 dark:border-purple-900/50 bg-purple-50/50 dark:bg-purple-900/10' : 'border-orange-200 dark:border-orange-900/50 bg-orange-50/50 dark:bg-orange-900/10'}`}
                             >
-                                <div className="flex items-start gap-4">
-                                    <div className={`p-3 rounded-xl flex-shrink-0 ${op.type === 'FREE_ADDON' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'}`}>
-                                        {op.type === 'FREE_ADDON' ? <Gift className="w-6 h-6" /> : <Sparkles className="w-6 h-6" />}
-                                    </div>
-                                    <div className="flex-grow">
-                                        <div className="flex justify-between items-start">
-                                             <h4 className="font-bold text-slate-900 dark:text-white text-lg">{op.title}</h4>
-                                             {op.type === 'UPSELL' && (
-                                                 <span className="text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded-full">Recommended</span>
-                                             )}
-                                        </div>
-                                        
-                                        <p className="text-sm text-slate-600 dark:text-slate-300 mt-1 mb-2 leading-relaxed">{op.description}</p>
-                                        
-                                        {/* REASONING SECTION */}
-                                        <div className="flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg mb-3 border border-slate-100 dark:border-slate-700/50">
-                                            <BrainCircuit className="w-4 h-4 text-brand-500 mt-0.5 flex-shrink-0" />
-                                            <p className="text-xs text-slate-500 dark:text-slate-400 italic">
-                                                <span className="font-bold not-italic text-brand-600 dark:text-brand-400">Why: </span>
-                                                {op.reason}
-                                            </p>
-                                        </div>
+                                {/* Glow Effect */}
+                                <div className={`absolute -inset-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl ${op.type === 'FREE_ADDON' ? 'bg-purple-400/20' : 'bg-orange-400/20'}`}></div>
 
-                                        {/* Free Addon Selection Logic */}
-                                        {op.type === 'FREE_ADDON' && op.eligibleAddons && (
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                                {op.eligibleAddons.map(addon => (
-                                                    <button
-                                                        key={addon}
-                                                        onClick={() => handleFreeAddon(addon, op.code, op.eligibleAddons)}
-                                                        className={`text-xs px-3 py-1.5 rounded-full border font-bold transition-colors flex items-center gap-1 ${
-                                                            state.ppf.addOns.includes(addon) 
-                                                            ? 'bg-brand-500 text-white border-brand-500'
-                                                            : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-brand-300'
-                                                        }`}
-                                                    >
-                                                        {state.ppf.addOns.includes(addon) && <Check className="w-3 h-3" />}
-                                                        {addon}
-                                                    </button>
-                                                ))}
+                                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 h-full relative z-10">
+                                     {/* Accent Line */}
+                                    <div className={`absolute top-0 left-0 bottom-0 w-1 ${op.type === 'FREE_ADDON' ? 'bg-purple-500' : 'bg-orange-500'}`}></div>
+
+                                    <div className="flex items-start gap-4 pl-3">
+                                        <div className={`p-2.5 rounded-lg flex-shrink-0 ${op.type === 'FREE_ADDON' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'}`}>
+                                            {op.type === 'FREE_ADDON' ? <Gift className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+                                        </div>
+                                        <div className="flex-grow">
+                                            <div className="flex justify-between items-start">
+                                                 <h4 className="font-bold text-slate-900 dark:text-white text-base">{op.title}</h4>
+                                                 {op.type === 'UPSELL' && (
+                                                     <motion.span 
+                                                        animate={{ opacity: [0.7, 1, 0.7] }}
+                                                        transition={{ duration: 2, repeat: Infinity }}
+                                                        className="text-[10px] font-bold bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full uppercase tracking-wider border border-green-200 dark:border-green-800"
+                                                     >
+                                                        Smart Pick
+                                                     </motion.span>
+                                                 )}
                                             </div>
-                                        )}
+                                            
+                                            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1 mb-2 leading-relaxed">{op.description}</p>
+                                            
+                                            {/* REASONING SECTION */}
+                                            <div className="flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg mb-3 border border-slate-100 dark:border-slate-700/50">
+                                                <BrainCircuit className="w-3.5 h-3.5 text-brand-500 mt-0.5 flex-shrink-0" />
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 italic leading-snug">
+                                                    "{op.reason}"
+                                                </p>
+                                            </div>
 
-                                        {/* Upsell Logic */}
-                                        {op.type === 'UPSELL' && op.serviceToEnable && (
-                                            <button 
-                                                onClick={() => {
-                                                    if (op.serviceToEnable === ServiceType.CERAMIC) {
-                                                        handleAddService(ServiceType.CERAMIC, 'CERAMIC_PACKAGE');
-                                                    } else if (op.serviceToEnable === ServiceType.TINT) {
-                                                        handleAddService(ServiceType.TINT, 'TINT_TYPE');
-                                                    } else if (op.serviceToEnable === ServiceType.INTERIOR) {
-                                                        handleAddService(ServiceType.INTERIOR, 'INTERIOR');
-                                                    }
-                                                }}
-                                                className="w-full mt-2 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg text-sm hover:bg-slate-800 dark:hover:bg-slate-200 transition flex items-center justify-center gap-2"
-                                            >
-                                                Add & Apply Discount <ArrowRight className="w-4 h-4" />
-                                            </button>
-                                        )}
+                                            {/* Free Addon Selection Logic */}
+                                            {op.type === 'FREE_ADDON' && op.eligibleAddons && (
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                    {op.eligibleAddons.map(addon => (
+                                                        <button
+                                                            key={addon}
+                                                            onClick={() => handleFreeAddon(addon, op.code, op.eligibleAddons)}
+                                                            className={`text-xs px-3 py-1.5 rounded-full border font-bold transition-all flex items-center gap-1 ${
+                                                                state.ppf.addOns.includes(addon) 
+                                                                ? 'bg-brand-500 text-white border-brand-500 shadow-brand-500/30 shadow-sm'
+                                                                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-brand-300'
+                                                            }`}
+                                                        >
+                                                            {state.ppf.addOns.includes(addon) && <Check className="w-3 h-3" />}
+                                                            {addon}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* Upsell Logic */}
+                                            {op.type === 'UPSELL' && op.serviceToEnable && (
+                                                <button 
+                                                    onClick={() => {
+                                                        if (op.serviceToEnable === ServiceType.CERAMIC) {
+                                                            handleAddService(ServiceType.CERAMIC, 'CERAMIC_PACKAGE');
+                                                        } else if (op.serviceToEnable === ServiceType.TINT) {
+                                                            handleAddService(ServiceType.TINT, 'TINT_TYPE');
+                                                        } else if (op.serviceToEnable === ServiceType.INTERIOR) {
+                                                            handleAddService(ServiceType.INTERIOR, 'INTERIOR');
+                                                        }
+                                                    }}
+                                                    className="w-full mt-2 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg text-sm hover:bg-slate-800 dark:hover:bg-slate-200 transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                                                >
+                                                    Add & Apply Discount <ArrowRight className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </motion.div>
@@ -1357,7 +1419,7 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
              return (
                 <div className="space-y-4">
                     <h3 className="text-xl font-bold text-slate-800 dark:text-white">Review Your Quote</h3>
-                    <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-xl text-sm space-y-4 max-h-[40vh] overflow-y-auto border border-slate-100 dark:border-slate-700 text-slate-900 dark:text-slate-100 shadow-inner brand-scrollbar">
+                    <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-xl text-sm space-y-4 max-h-[35vh] overflow-y-auto border border-slate-100 dark:border-slate-700 text-slate-900 dark:text-slate-100 shadow-inner brand-scrollbar">
                         <div>
                             <span className="font-bold block text-slate-700 dark:text-slate-400 uppercase text-xs tracking-wider mb-1">Vehicle</span>
                             <div className="font-semibold text-base">{state.vehicle.year} {state.vehicle.make} {state.vehicle.model}</div>
@@ -1421,47 +1483,69 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
                         </div>
                     </div>
 
-                    {/* Promo Code Section */}
+                    {/* Enhanced Promo Code Section */}
                     <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
                         <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                            <Tag className="w-4 h-4 text-brand-500"/> Have a Promo Code?
+                            <Tag className="w-4 h-4 text-brand-500"/> Promo Codes
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 mb-3">
                             <input 
                                 type="text" 
                                 className="flex-grow p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg uppercase text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950 transition-shadow"
                                 placeholder="Enter Code"
-                                value={state.promoCode}
+                                value={promoInput}
                                 onChange={(e) => {
-                                    updateState({ promoCode: e.target.value });
-                                    setValidPromo(null);
+                                    setPromoInput(e.target.value);
                                     setPromoError('');
                                 }}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddPromo()}
                             />
                             <button 
-                                onClick={handlePromoCheck}
-                                className="px-5 py-2 bg-slate-800 dark:bg-slate-700 text-white text-sm font-bold rounded-lg hover:bg-slate-700 dark:hover:bg-slate-600 hover:shadow-lg transition-all active:scale-95"
+                                onClick={handleAddPromo}
+                                disabled={!promoInput}
+                                className="px-5 py-2 bg-slate-800 dark:bg-slate-700 text-white text-sm font-bold rounded-lg hover:bg-slate-700 dark:hover:bg-slate-600 hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Apply
                             </button>
                         </div>
-                        {validPromo ? (
-                             <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border border-green-200 dark:border-green-800 rounded-xl text-sm text-green-800 dark:text-green-300 flex items-center animate-in slide-in-from-top-2 fade-in duration-300 relative overflow-hidden shadow-sm">
-                                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-green-500"></div>
-                                <div className="absolute -right-4 -bottom-4 text-green-100 dark:text-green-900/50">
-                                    <Ticket className="w-16 h-16 transform rotate-12" />
-                                </div>
-                                <div className="bg-green-100 dark:bg-green-900/50 p-1.5 rounded-full mr-3 z-10">
-                                     <Check className="w-4 h-4 text-green-600 dark:text-green-400"/> 
-                                </div>
-                                <div className="z-10">
-                                    <span className="block text-xs font-bold uppercase tracking-wider text-green-600 dark:text-green-400 opacity-80">Promo Applied</span>
-                                    <span className="font-bold text-slate-800 dark:text-white text-base">{validPromo}</span>
-                                </div>
-                             </div>
-                        ) : (
-                           state.promoCode && promoError && <p className="text-red-500 text-xs mt-2 font-medium flex items-center gap-1"><X className="w-3 h-3"/> {promoError}</p>
+
+                        {/* Error Message */}
+                        {promoError && (
+                            <p className="text-red-500 text-xs mb-3 font-medium flex items-center gap-1 animate-in slide-in-from-top-1 fade-in">
+                                <AlertCircle className="w-3 h-3"/> {promoError}
+                            </p>
                         )}
+
+                        {/* Applied Promos List */}
+                        <AnimatePresence>
+                            {state.promoCodes.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                    {state.promoCodes.map((code) => {
+                                        const promoDetails = PROMOS.find(p => p.code === code);
+                                        return (
+                                            <motion.div 
+                                                key={code}
+                                                initial={{ scale: 0.9, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                exit={{ scale: 0.9, opacity: 0 }}
+                                                className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg pl-3 pr-2 py-1.5 flex items-center gap-2"
+                                            >
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-green-700 dark:text-green-300 uppercase tracking-wider">{code}</span>
+                                                    {promoDetails && <span className="text-[10px] text-green-600 dark:text-green-400 leading-none">{promoDetails.description}</span>}
+                                                </div>
+                                                <button 
+                                                    onClick={() => handleRemovePromo(code)}
+                                                    className="p-1 hover:bg-green-100 dark:hover:bg-green-800 rounded-full text-green-600 dark:text-green-400 transition-colors"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     <p className="text-xs text-slate-500 dark:text-slate-400 text-center pt-2">
@@ -1499,8 +1583,31 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
           <motion.div 
             variants={modalVariants}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-lg bg-white dark:bg-slate-900 sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[90vh] dark:border dark:border-slate-700"
+            className="relative w-full max-w-lg bg-white dark:bg-slate-900 sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[90vh] dark:border dark:border-slate-700 overflow-hidden"
           >
+             {/* BLACK FRIDAY BANNER - Mobile Optimized with Animation */}
+             {!isSuccess && (
+                <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="bg-red-600 text-white text-center py-2 px-3 relative overflow-hidden flex items-center justify-center gap-2 z-20"
+                >
+                    {/* Background Pulse */}
+                    <div className="absolute inset-0 bg-red-500 animate-pulse opacity-50"></div>
+                    {/* Shimmer */}
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite]" style={{ backgroundSize: '200% 100%' }}></div>
+                    
+                    <motion.div 
+                        className="relative z-10 flex items-center gap-2 text-xs md:text-sm font-black tracking-wide uppercase truncate"
+                        animate={{ scale: [1, 1.02, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                        <Tag className="w-3.5 h-3.5 md:w-4 md:h-4 fill-white/30" /> 
+                        <span>Black Friday Sale <span className="hidden sm:inline opacity-90">- Ends Soon!</span></span>
+                    </motion.div>
+                </motion.div>
+             )}
+
              {isSuccess ? (
                  <div className="p-10 text-center flex flex-col items-center justify-center h-full min-h-[400px]">
                      <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mb-6 shadow-inner">
@@ -1524,7 +1631,7 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
              ) : (
                <>
                 {/* Header */}
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-gradient-to-r from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 sm:rounded-t-2xl rounded-t-2xl sticky top-0 z-10">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-gradient-to-r from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 sticky top-0 z-10">
                     <div>
                         <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-lg">
                             <div className="bg-brand-400 p-1 rounded-lg">
@@ -1558,8 +1665,8 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
                     />
                 </div>
 
-                {/* Body */}
-                <div className="p-6 overflow-y-auto flex-grow brand-scrollbar relative">
+                {/* Body - Scrollable Container */}
+                <div ref={scrollContainerRef} className="p-6 overflow-y-auto flex-grow brand-scrollbar relative scroll-smooth">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={currentStep}
@@ -1575,8 +1682,8 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
 
                 {/* Validation Message */}
                 {validationMsg && (
-                    <div className="px-4 pb-2 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm flex justify-center">
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-in slide-in-from-bottom-2 fade-in">
+                    <div className="px-4 pb-2 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm flex justify-center absolute bottom-20 left-0 right-0 z-20 pointer-events-none">
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-in slide-in-from-bottom-2 fade-in shadow-lg">
                              <AlertCircle className="w-4 h-4" /> {validationMsg}
                         </div>
                     </div>
