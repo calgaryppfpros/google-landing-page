@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { Star, Shield, Sun, Moon, Droplets, Eye, Wrench, Play, CheckCircle, ChevronDown, Mail, Menu, Sparkles, Phone, Tag, Award, Timer, Check, Layers, ShieldCheck, Ghost, Palette, MousePointerClick, RefreshCcw, X, ArrowRight, Loader2, Maximize2, Armchair, History, Trophy, Globe, Car, HeartHandshake, MapPin, Users } from 'lucide-react';
+import { Star, Shield, Sun, Moon, Droplets, Eye, Wrench, Play, CheckCircle, ChevronDown, Mail, Menu, Sparkles, Phone, Tag, Award, Timer, Check, Layers, ShieldCheck, Ghost, Palette, MousePointerClick, RefreshCcw, X, ArrowRight, Loader2, Maximize2, Armchair, History, Trophy, Globe, Car, HeartHandshake, MapPin, Users, Ticket, Copy, Zap } from 'lucide-react';
 import { PROMOS, CAR_COLORS, CarColor } from '../types';
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent, useMotionValue, useSpring } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent, useMotionValue, useSpring, useMotionTemplate } from 'framer-motion';
 
 interface Props {
   onOpenQuote: () => void;
@@ -44,9 +43,9 @@ class DebrisParticle {
         this.rotSpeed = (Math.random() - 0.5) * 0.04;
         this.aspectRatio = Math.random() * 3 + 1.5;
 
-        // Antigravity Google Colors (Vibrant Blues + Brand)
-        const colorsLight = ['#0ea5e9', '#0284c7', '#38bdf8', '#0369a1', '#7dd3fc'];
-        const colorsDark = ['#38bdf8', '#7dd3fc', '#bae6fd', '#0ea5e9', '#ffffff'];
+        // Theme-aware colors
+        const colorsLight = ['#ef4444', '#dc2626', '#334155', '#0ea5e9', '#cbd5e1'];
+        const colorsDark = ['#ef4444', '#b91c1c', '#38bdf8', '#ffffff', '#475569'];
         const palette = theme === 'dark' ? colorsDark : colorsLight;
         this.color = palette[Math.floor(Math.random() * palette.length)];
 
@@ -222,21 +221,24 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
   const [email, setEmail] = useState('');
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showVisualizer, setShowVisualizer] = useState(false);
-  const [activeColor, setActiveColor] = useState(CAR_COLORS[2]); // Default to a color
+  const [activeColor, setActiveColor] = useState(CAR_COLORS[2]);
   const [isSimulating, setIsSimulating] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   
   const { scrollY } = useScroll();
   
   // Hero Opacity Logic: Fade out as user scrolls
   const heroOpacity = useTransform(scrollY, [0, 500], [1, 0]);
-  const heroY = useTransform(scrollY, [0, 500], [0, 100]); // Gentle parallax
+  const heroY = useTransform(scrollY, [0, 500], [0, 100]); 
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 20);
-  });
-  
+  // Header Animation Transforms
+  const navTop = useTransform(scrollY, [0, 100], ["1rem", "0rem"]);
+  const navWidth = useTransform(scrollY, [0, 100], ["95%", "100%"]);
+  const navMaxWidth = useTransform(scrollY, [0, 100], ["1280px", "100%"]); // Constrain to 7xl (approx 1280) then go full
+  const navRadius = useTransform(scrollY, [0, 100], ["1rem", "0rem"]);
+  const navBlur = useTransform(scrollY, [0, 100], [0, 12]);
+  const navBgOpacity = useTransform(scrollY, [0, 100], [0, 0.8]);
+  const navBorderOpacity = useTransform(scrollY, [0, 100], [0, 1]);
+
   // Dark Mode State
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
@@ -256,6 +258,11 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
       setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
+  // Dynamic Styles for Header based on Theme
+  const navBg = useMotionTemplate`rgba(${theme === 'dark' ? '2, 6, 23' : '255, 255, 255'}, ${navBgOpacity})`;
+  const navBorderColor = useMotionTemplate`rgba(${theme === 'dark' ? '30, 41, 59' : '226, 232, 240'}, ${navBorderOpacity})`;
+  const backdropFilter = useMotionTemplate`blur(${navBlur}px)`;
+
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
@@ -267,7 +274,6 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
             body: JSON.stringify({ email, source: 'Landing Page Footer', date: new Date().toISOString() })
         });
 
-        // GTM Tracking
         if ((window as any).dataLayer) {
             (window as any).dataLayer.push({
                 event: 'newsletter_signup',
@@ -287,30 +293,6 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
     const el = document.getElementById(id);
     if(el) el.scrollIntoView({ behavior: 'smooth' });
     setMobileMenuOpen(false);
-  };
-
-  const handleColorChange = (color: CarColor) => {
-      if (color.id === activeColor.id) return;
-      setIsSimulating(true);
-      setActiveColor(color);
-      // Simulate "Generation" time
-      setTimeout(() => setIsSimulating(false), 800);
-  };
-
-  // Animation Variants
-  const containerVariants = {
-      hidden: { opacity: 0 },
-      visible: {
-          opacity: 1,
-          transition: {
-              staggerChildren: 0.1
-          }
-      }
-  };
-
-  const itemVariants = {
-      hidden: { opacity: 0, y: 30 },
-      visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, damping: 20 } }
   };
 
   // --- 3D Tilt Logic for Hero ---
@@ -342,16 +324,22 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
 
   return (
     <div className="w-full bg-slate-50 dark:bg-slate-950 overflow-x-hidden font-inter transition-colors duration-300">
-      {/* Modern Floating Pill Header */}
+      {/* Modern Sticky Header */}
       <motion.header 
-        className="fixed top-0 left-0 right-0 z-40 flex justify-center pt-4 pointer-events-none"
+        className="fixed top-0 left-0 right-0 z-40 flex justify-center pointer-events-none"
       >
-        <div className={`pointer-events-auto transition-all duration-500 ease-out max-w-7xl w-full mx-4 rounded-2xl flex items-center justify-between px-6 py-3 ${
-             isScrolled 
-             ? 'bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border border-slate-200/50 dark:border-slate-700/50 shadow-xl scale-100' 
-             : 'bg-transparent scale-105 border-transparent'
-        }`}>
-            
+        <motion.div 
+            style={{ 
+                top: navTop,
+                width: navWidth,
+                maxWidth: navMaxWidth,
+                borderRadius: navRadius,
+                backgroundColor: navBg,
+                borderColor: navBorderColor,
+                backdropFilter: backdropFilter,
+            }}
+            className="pointer-events-auto flex items-center justify-between px-6 py-3 border border-transparent shadow-sm transition-shadow duration-300"
+        >
             {/* Logo Area */}
             <div 
                 className="flex items-center gap-3 cursor-pointer text-slate-900 dark:text-white transition-transform hover:scale-105" 
@@ -361,7 +349,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8 bg-slate-100/50 dark:bg-slate-800/50 rounded-full px-6 py-2 border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm">
+            <div className="hidden md:flex items-center gap-8 px-6 py-2">
                 {['Services', 'Technology', 'Process', 'About'].map((item) => (
                     <button 
                         key={item}
@@ -393,7 +381,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                 {/* CTA Button */}
                 <button 
                     onClick={onOpenQuote} 
-                    className="hidden md:flex items-center gap-2 bg-slate-900 dark:bg-white hover:bg-brand-600 dark:hover:bg-slate-200 text-white dark:text-slate-900 px-5 py-2 rounded-xl font-bold shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95"
+                    className="hidden md:flex items-center gap-2 bg-slate-900 dark:bg-white hover:bg-red-600 dark:hover:bg-slate-200 text-white dark:text-slate-900 px-5 py-2 rounded-xl font-bold shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95"
                 >
                     <span>Get Quote</span>
                     <ArrowRight className="w-4 h-4" />
@@ -407,7 +395,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                     <Menu className="w-5 h-5" />
                 </button>
             </div>
-        </div>
+        </motion.div>
 
         {/* Mobile Menu Dropdown */}
         <AnimatePresence>
@@ -435,9 +423,9 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                         </div>
                         <button 
                             onClick={() => { onOpenQuote(); setMobileMenuOpen(false); }} 
-                            className="w-full bg-brand-500 text-white py-3 rounded-xl font-bold mt-2 hover:bg-brand-600 transition shadow-lg"
+                            className="w-full bg-red-600 text-white py-3 rounded-xl font-bold mt-2 hover:bg-red-700 transition shadow-lg flex items-center justify-center gap-2"
                         >
-                            Get Smart Quote
+                           <Tag className="w-4 h-4" /> Black Friday Quote
                         </button>
                     </div>
                 </motion.div>
@@ -445,38 +433,59 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
         </AnimatePresence>
       </motion.header>
 
-      {/* --- ANTIGRAVITY HERO SECTION --- */}
+      {/* --- IMPACTFUL BLACK FRIDAY HERO SECTION --- */}
       <section 
-        className="relative pt-32 pb-24 lg:pt-48 lg:pb-40 overflow-hidden"
+        className="relative pt-32 pb-24 lg:pt-48 lg:pb-40 overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-500"
         onMouseMove={handleMouseMove} 
         onMouseLeave={handleMouseLeave}
       >
-        {/* 1. Background Gradient base */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-black z-0"></div>
+        {/* 1. Background Elements */}
+        <div className="absolute inset-0 z-0">
+            {/* Theme-Aware Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-slate-100 dark:from-black dark:via-slate-900 dark:to-slate-950 opacity-90 transition-colors duration-500"></div>
+            
+            {/* Atmospheric Glow - Adjusted for Light Mode */}
+            <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-red-600/10 dark:bg-red-600/20 rounded-full blur-[150px]"></div>
+            <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-brand-600/10 dark:bg-brand-600/20 rounded-full blur-[120px]"></div>
+        </div>
 
         {/* 2. Interactive Gravity Canvas (Debris) */}
-        {/* Wrapped with motion.div to control opacity on scroll */}
         <motion.div 
             style={{ opacity: heroOpacity, y: heroY }} 
-            className="absolute inset-0 z-0 pointer-events-none"
+            className="absolute inset-0 z-0 pointer-events-none mix-blend-multiply dark:mix-blend-screen"
         >
             <GravityCanvas theme={theme} />
         </motion.div>
 
-        {/* 3. Gradient Blend to Next Section */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-slate-900 dark:via-slate-900/80 dark:to-transparent z-10 pointer-events-none" />
-
-        {/* 4. Content Container */}
+        {/* 3. Content Container */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 perspective-1000">
-          <div className="max-w-4xl">
+          <div className="max-w-5xl mx-auto text-center md:text-left">
+            
+            {/* BLACK FRIDAY BADGE */}
+            <motion.div 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 inline-flex justify-center md:justify-start w-full md:w-auto"
+            >
+                <div className="bg-red-600 text-white px-6 py-2 rounded-full border border-red-500 shadow-[0_0_30px_rgba(220,38,38,0.3)] flex items-center gap-3 animate-pulse">
+                    <span className="font-black text-sm tracking-widest uppercase flex items-center gap-2">
+                        <Tag className="w-4 h-4" /> Black Friday Sale
+                    </span>
+                    <span className="bg-white text-red-600 px-2 py-0.5 rounded text-[11px] font-bold">LIVE NOW</span>
+                </div>
+            </motion.div>
+
+            {/* TRUST BADGE (Mobile Optimized) */}
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-brand-200/50 dark:border-slate-700/50 text-brand-700 dark:text-brand-300 text-sm font-bold mb-8 shadow-sm"
+                className="flex justify-center md:justify-start mb-6"
             >
-                <Award className="w-4 h-4 text-brand-500" />
-                <span>Calgary's Premier Protection Studio • 25+ Years Combined Experience</span>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm sm:text-base font-bold shadow-sm">
+                    <Award className="w-5 h-5 md:w-4 md:h-4 text-brand-500 dark:text-brand-400 flex-shrink-0" />
+                    <span>Calgary's Premier Protection Studio • 25+ Years Experience</span>
+                </div>
             </motion.div>
             
             {/* 3D TILT HEADLINE */}
@@ -488,11 +497,12 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
               }}
               className="perspective-1000"
             >
-              <h1 className="text-5xl md:text-8xl font-black text-slate-900 dark:text-white tracking-tight md:tracking-tighter leading-[1.1] md:leading-[1.05] mb-8 drop-shadow-2xl">
-                <span className="block">Don't Let Calgary's Roads</span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-600">
-                  Destroy Your Paint.
+              <h1 className="text-6xl sm:text-7xl md:text-9xl font-black text-slate-900 dark:text-white tracking-tighter leading-[0.9] mb-8 drop-shadow-2xl">
+                <span className="block">BLACK</span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-500 to-brand-600">
+                  FRIDAY
                 </span>
+                <span className="block text-4xl sm:text-5xl md:text-7xl mt-2 text-slate-500 dark:text-slate-300">PROTECTION EVENT</span>
               </h1>
             </motion.div>
 
@@ -500,41 +510,43 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed max-w-2xl font-medium"
+                className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed max-w-2xl mx-auto md:mx-0 font-medium"
             >
-              Every Calgary driver knows the anxiety of that first rock chip on Deerfoot Trail.
-              We specialize in invisible, self-healing protection that keeps your paint flawless—no matter how harsh the winter or brutal the commute.
-              Military-grade XPEL technology, installed by perfectionists who actually care.
+              Don't wait for the first rock chip. Secure the year's best pricing on XPEL Paint Protection Film and Ceramic Coating. 
+              <span className="text-slate-900 dark:text-white block mt-2 font-bold">Limited spots available for 2025 pricing.</span>
             </motion.p>
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
-                className="flex flex-col sm:flex-row gap-4"
+                className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start"
             >
-              <button onClick={onOpenQuote} className="inline-flex justify-center items-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-brand-400 to-brand-600 rounded-full hover:shadow-xl hover:shadow-brand-400/30 transition-all transform hover:-translate-y-1 hover:scale-105 active:scale-95 ring-4 ring-brand-400/20">
-                Get Your Quote
+              <button onClick={onOpenQuote} className="inline-flex justify-center items-center px-10 py-5 text-xl font-black text-white bg-red-600 rounded-full hover:bg-red-700 hover:shadow-[0_0_40px_rgba(220,38,38,0.4)] transition-all transform hover:-translate-y-1 hover:scale-105 active:scale-95 ring-4 ring-red-600/20">
+                CLAIM OFFER <ArrowRight className="w-6 h-6 ml-2" />
               </button>
+              <a href="tel:+14038303311" className="inline-flex justify-center items-center px-10 py-5 text-lg font-bold text-slate-700 dark:text-white bg-white dark:bg-slate-800 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700">
+                Call (403) 830-3311
+              </a>
             </motion.div>
 
-            <div className="mt-12 flex items-center gap-8">
+            <div className="mt-12 flex items-center justify-center md:justify-start gap-8">
                 <div className="flex -space-x-4">
                     {[1,2,3,4].map(i => (
-                         <div key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 overflow-hidden shadow-lg">
+                         <div key={i} className="w-12 h-12 rounded-full border-2 border-slate-50 dark:border-slate-950 bg-slate-200 dark:bg-slate-800 overflow-hidden shadow-lg relative">
                              <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="Client" />
                          </div>
                     ))}
-                    <div className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-900 bg-brand-50 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-brand-600 dark:text-brand-400 shadow-lg">
-                        <ShieldCheck className="w-5 h-5" />
+                    <div className="w-12 h-12 rounded-full border-2 border-slate-50 dark:border-slate-950 bg-brand-600 flex items-center justify-center text-xs font-bold text-white shadow-lg">
+                        1k+
                     </div>
                 </div>
-                <div className="text-sm">
+                <div className="text-left">
                     <div className="flex text-yellow-400 mb-1">
-                        {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-current" />)}
+                        {[1,2,3,4,5].map(i => <Star key={i} className="w-5 h-5 fill-current" />)}
                     </div>
-                    <p className="font-bold text-slate-700 dark:text-slate-300 text-lg flex items-center gap-2">
-                        1000+ Vehicles Protected
+                    <p className="font-bold text-slate-500 dark:text-slate-300 text-lg">
+                        Calgary's Top Rated
                     </p>
                 </div>
             </div>
@@ -542,44 +554,91 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
         </div>
       </section>
 
+      {/* NEW PROMOTIONS SECTION (Mobile Friendly) */}
+      <section className="py-20 bg-white dark:bg-slate-900 relative overflow-hidden border-b border-slate-200 dark:border-slate-800 transition-colors duration-500">
+        {/* Black Friday decoration */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-brand-600 to-red-600"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+            {/* Fixed Mobile Alignment: items-start on mobile, items-end on md */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+                <div>
+                    <div className="inline-flex items-center gap-2 bg-red-600/10 text-red-500 border border-red-600/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+                        <Zap className="w-4 h-4" /> Doorbuster Deals
+                    </div>
+                    <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white">Stackable Savings</h2>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 max-w-sm">
+                    Apply these codes during your quote to unlock exclusive Black Friday pricing.
+                </p>
+            </div>
+
+            {/* Mobile-Friendly Grid: 1 col mobile, 2 col tablet, 4 col desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                {PROMOS.map((promo, idx) => (
+                    <div key={idx} className="bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur border border-slate-200 dark:border-slate-700 p-6 rounded-2xl relative group hover:border-red-500/50 transition-all hover:-translate-y-1 shadow-lg flex flex-col justify-between min-h-[220px]">
+                        <div>
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="text-brand-600 dark:text-brand-400 font-black text-2xl tracking-wide font-mono bg-white dark:bg-slate-900/50 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700/50 shadow-sm">
+                                    {promo.code}
+                                </div>
+                                <div className="text-slate-400 group-hover:text-red-500 transition-colors">
+                                    <Ticket className="w-6 h-6" />
+                                </div>
+                            </div>
+                            <p className="text-slate-900 dark:text-white font-bold text-lg mb-2 leading-tight">{promo.description}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">{promo.rules}</p>
+                        </div>
+                        <button 
+                            onClick={() => {navigator.clipboard.writeText(promo.code); alert('Code copied!')}}
+                            className="w-full py-3 bg-slate-200 dark:bg-slate-700 hover:bg-red-600 dark:hover:bg-red-600 text-slate-800 dark:text-white hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Copy className="w-4 h-4" /> Copy Code
+                        </button>
+                    </div>
+                ))}
+            </div>
+        </div>
+      </section>
+
       {/* NEW: Trust Indicators Strip */}
-      <section className="bg-slate-900 dark:bg-black py-12 border-y border-slate-800 relative z-20">
+      <section className="bg-slate-100 dark:bg-slate-950 py-12 border-y border-slate-200 dark:border-slate-800 relative z-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-center text-center">
                   <div className="flex flex-col items-center gap-3 group cursor-pointer">
-                      <div className="p-4 bg-white/5 rounded-full group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300">
-                          <Award className="w-8 h-8 text-brand-400 group-hover:text-white" />
+                      <div className="p-4 bg-white dark:bg-white/5 rounded-full group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300 shadow-sm dark:shadow-none">
+                          <Award className="w-8 h-8 text-brand-500 dark:text-brand-400 group-hover:text-white" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-white text-lg">3× Consumer Choice Award</h3>
-                        <p className="text-sm text-slate-400">Calgary's Highest-Rated PPF Shop</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">3× Consumer Choice Award</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Calgary's Highest-Rated PPF Shop</p>
                       </div>
                   </div>
                    <div className="flex flex-col items-center gap-3 group cursor-pointer">
-                      <div className="p-4 bg-white/5 rounded-full group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300">
-                          <ShieldCheck className="w-8 h-8 text-brand-400 group-hover:text-white" />
+                      <div className="p-4 bg-white dark:bg-white/5 rounded-full group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300 shadow-sm dark:shadow-none">
+                          <ShieldCheck className="w-8 h-8 text-brand-500 dark:text-brand-400 group-hover:text-white" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-white text-lg">Authorized XPEL Dealer</h3>
-                        <p className="text-sm text-slate-400">1 of Only 5 in Calgary</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">Authorized XPEL Dealer</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">1 of Only 5 in Calgary</p>
                       </div>
                   </div>
                   <div className="flex flex-col items-center gap-3 group cursor-pointer">
-                      <div className="p-4 bg-white/5 rounded-full group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300">
-                          <Globe className="w-8 h-8 text-brand-400 group-hover:text-white" />
+                      <div className="p-4 bg-white dark:bg-white/5 rounded-full group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300 shadow-sm dark:shadow-none">
+                          <Globe className="w-8 h-8 text-brand-500 dark:text-brand-400 group-hover:text-white" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-white text-lg">10-Year Warranty</h3>
-                        <p className="text-sm text-slate-400">Honored at 1,000+ Shops</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">10-Year Warranty</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Honored at 1,000+ Shops</p>
                       </div>
                   </div>
                   <div className="flex flex-col items-center gap-3 group cursor-pointer">
-                      <div className="p-4 bg-white/5 rounded-full group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300">
-                          <Car className="w-8 h-8 text-brand-400 group-hover:text-white" />
+                      <div className="p-4 bg-white dark:bg-white/5 rounded-full group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300 shadow-sm dark:shadow-none">
+                          <Car className="w-8 h-8 text-brand-500 dark:text-brand-400 group-hover:text-white" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-white text-lg">Uber Rides</h3>
-                        <p className="text-sm text-slate-400">On Select Services</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">Uber Rides</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">On Select Services</p>
                       </div>
                   </div>
               </div>
@@ -587,7 +646,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
       </section>
 
       {/* Your Paint is Under Constant Attack Section */}
-      <section className="py-24 bg-gradient-to-br from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 relative overflow-hidden">
+      <section className="py-24 bg-white dark:bg-slate-900 relative overflow-hidden transition-colors duration-500">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               {/* Badge */}
               <div className="flex justify-center mb-8">
@@ -617,9 +676,9 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.5 }}
-                      className="bg-white dark:bg-slate-800 rounded-2xl p-8 border-2 border-slate-100 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-colors"
+                      className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-8 border-2 border-slate-100 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-colors"
                   >
-                      <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center mb-6">
+                      <div className="w-14 h-14 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center mb-6">
                           <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                           </svg>
@@ -639,9 +698,9 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: 0.1 }}
-                      className="bg-white dark:bg-slate-800 rounded-2xl p-8 border-2 border-slate-100 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800 transition-colors"
+                      className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-8 border-2 border-slate-100 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800 transition-colors"
                   >
-                      <div className="w-14 h-14 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center mb-6">
+                      <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/20 rounded-xl flex items-center justify-center mb-6">
                           <svg className="w-7 h-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                           </svg>
@@ -661,9 +720,9 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: 0.2 }}
-                      className="bg-white dark:bg-slate-800 rounded-2xl p-8 border-2 border-slate-100 dark:border-slate-700 hover:border-yellow-200 dark:hover:border-yellow-800 transition-colors"
+                      className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-8 border-2 border-slate-100 dark:border-slate-700 hover:border-yellow-200 dark:hover:border-yellow-800 transition-colors"
                   >
-                      <div className="w-14 h-14 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
+                      <div className="w-14 h-14 bg-yellow-100 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
                           <Sun className="w-7 h-7 text-yellow-500" />
                       </div>
                       <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Intense UV Damage</h3>
@@ -682,7 +741,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6 }}
-                  className="bg-gradient-to-br from-slate-900 to-black dark:from-black dark:to-slate-950 rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-12 border border-slate-800 relative overflow-hidden mx-auto"
+                  className="bg-slate-900 dark:bg-slate-950 rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-12 border border-slate-800 relative overflow-hidden mx-auto shadow-2xl"
               >
                   <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl"></div>
 
@@ -726,7 +785,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
 
                           {/* Protection Investment */}
                           <div className="flex flex-col justify-center max-w-md mx-auto w-full">
-                              <div className="bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl md:rounded-2xl p-5 sm:p-6 md:p-8 text-center">
+                              <div className="bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl md:rounded-2xl p-5 sm:p-6 md:p-8 text-center shadow-lg">
                                   <p className="text-brand-100 font-bold mb-2 text-xs sm:text-sm md:text-base">Protection Investment</p>
                                   <div className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-3 md:mb-4">$2,500</div>
                                   <p className="text-brand-100 text-xs md:text-sm mb-5 md:mb-6">One-time cost</p>
@@ -751,7 +810,7 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
       </section>
 
       {/* Services Grid (Key Services) */}
-      <section id="services" className="py-24 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 relative z-20">
+      <section id="services" className="py-24 bg-slate-50 dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800 relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-20">
                 <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6">Comprehensive Protection</h2>
@@ -760,10 +819,18 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
 
             <motion.div
                 className="grid md:grid-cols-3 gap-8"
-                variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                      opacity: 1,
+                      transition: {
+                          staggerChildren: 0.1
+                      }
+                  }
+                }}
             >
                 {[
                     {
@@ -811,15 +878,18 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
                 ].map((service, idx) => (
                     <motion.div
                         key={idx}
-                        variants={itemVariants}
-                        className="bg-slate-50 dark:bg-slate-800 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group perspective-1000 border border-slate-100 dark:border-slate-700"
+                        variants={{
+                            hidden: { opacity: 0, y: 30 },
+                            visible: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20 } }
+                        }}
+                        className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group perspective-1000 border border-slate-100 dark:border-slate-700"
                     >
-                        <div className="w-14 h-14 bg-white dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 text-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300 shadow-sm">
+                        <div className="w-14 h-14 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 text-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300 shadow-sm">
                             <service.icon className="w-7 h-7" />
                         </div>
                         <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">{service.title}</h3>
                         <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">{service.desc}</p>
-                        <p className="text-brand-500 dark:text-brand-400 font-bold text-sm mb-3">{service.benefit}</p>
+                        <p className="text-brand-600 dark:text-brand-400 font-bold text-sm mb-3">{service.benefit}</p>
                         <p className="text-slate-500 dark:text-slate-500 text-xs">
                             <span className="font-bold">Essential for:</span> {service.essential}
                         </p>
@@ -1327,4 +1397,4 @@ export const LandingPage: React.FC<Props> = ({ onOpenQuote }) => {
       </footer>
     </div>
   );
-} 
+}
