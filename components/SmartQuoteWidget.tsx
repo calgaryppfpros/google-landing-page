@@ -292,18 +292,26 @@ export const SmartQuoteWidget: React.FC<Props> = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (currentStep === 'AI_MATCHING') {
         setIsAnalyzing(true);
+        let autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
         const timer = setTimeout(() => {
             const ops = analyzePromos(state);
             setOpportunities(ops);
             setIsAnalyzing(false);
             // If no opportunities, auto-advance after brief pause
             if (ops.length === 0) {
-                setTimeout(() => handleNext(), 1000);
+                autoAdvanceTimer = setTimeout(() => {
+                    if (currentStepIndex < steps.length - 1) {
+                        setCurrentStepIndex(prev => prev + 1);
+                    }
+                }, 1000);
             }
         }, 4500); // Extended slightly for new animation
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+        };
     }
-  }, [currentStep]);
+  }, [currentStep, currentStepIndex, steps.length, state]);
 
   // Clear active tooltip when changing steps
   useEffect(() => {
