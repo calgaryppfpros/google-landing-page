@@ -291,6 +291,6 @@ export const INITIAL_STATE: QuoteState = {
   detailingNotes: '',
   vehicle: { year: '', make: '', model: '', size: '', color: '', timing: '' },
   contact: { firstName: '', lastName: '', phone: '', email: '', method: 'Text' },
-  promoCode: '',
+  promoCodes: [],
   notes: ''
 };
